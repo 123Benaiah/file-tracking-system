@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dir /s /b \"C:\\\\Users\\\\Benaiah L\\\\OneDrive\\\\Documents\\\\file-tracking-system\\\\app\\\\*UserManagement*\")",
+      "Bash(dir /s /b \"C:\\\\Users\\\\Benaiah L\\\\OneDrive\\\\Documents\\\\file-tracking-system\\\\app\\\\Livewire\")",
+      "Bash(dir:*)",
+      "Bash(php artisan:*)",
+      "Bash(findstr:*)",
+      "Bash(powershell:*)",
+      "Bash(npm run build:*)",
+      "WebFetch(domain:185f-2a09-bac1-7e00-00-2c0-67.ngrok-free.app)"
+    ]
+  }
+}
