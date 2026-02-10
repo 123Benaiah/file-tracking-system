@@ -186,9 +186,9 @@ class SendFile extends Component
                                 $q2->where('name', 'like', "%{$term}%");
                             })
                             ->orWhereHas('unitRel', function ($q2) use ($term) {
-                                $q2->where('name', 'like', "%                            });
-                   {$term}%");
- });
+                                $q2->where('name', 'like', "%{$term}%");
+                            });
+                    });
                 }
             }
         }
