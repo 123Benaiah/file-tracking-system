@@ -44,12 +44,17 @@
                             @error('fileNumber') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
                         </div>
                         <div class="flex items-end gap-2">
-                            <button type="submit"
-                                    class="flex-1 sm:flex-none inline-flex items-center justify-center px-5 py-2.5 text-sm font-medium rounded-lg text-white bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 shadow-lg shadow-orange-500/20 transition-all">
-                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <button type="submit" wire:loading.attr="disabled" wire:loading.class="opacity-75 cursor-not-allowed"
+                                    class="flex-1 sm:flex-none inline-flex items-center justify-center px-5 py-2.5 text-sm font-medium rounded-lg text-white bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 shadow-lg shadow-orange-500/20 transition-all disabled:opacity-75 disabled:cursor-not-allowed">
+                                <svg wire:loading.remove wire:target="search" class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                                 </svg>
-                                Search
+                                <svg wire:loading wire:target="search" class="animate-spin h-5 w-5 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                <span wire:loading.remove wire:target="search">Search</span>
+                                <span wire:loading wire:target="search">Searching...</span>
                             </button>
                             @if($searchResults || $selectedFile)
                             <button type="button" wire:click="clearSearch"
@@ -88,7 +93,7 @@
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                                     {{ $file->getDisplayFileNo() }}
                                     @if($file->is_copy)
-                                    <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-700">
+                                    <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-orange-100 text-orange-700">
                                         Copy {{ $file->copy_number }}
                                     </span>
                                     @endif
@@ -100,7 +105,7 @@
                                     <span class="px-3 py-1 text-xs font-semibold rounded-full
                                         @if($file->status === 'at_registry') bg-green-100 text-green-700
                                         @elseif($file->status === 'in_transit') bg-orange-100 text-orange-700
-                                        @elseif($file->status === 'received') bg-emerald-100 text-emerald-700
+                                        @elseif($file->status === 'received') bg-gray-800 text-white
                                         @else bg-gray-100 text-gray-700
                                         @endif">
                                         {{ $file->getStatusLabel() }}
@@ -129,15 +134,15 @@
                             <div>
                                 <span class="text-sm font-semibold text-gray-900">{{ $file->getDisplayFileNo() }}</span>
                                 @if($file->is_copy)
-                                <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-700">
-                                    Copy {{ $file->copy_number }}
-                                </span>
+                                    <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-orange-100 text-orange-700">
+                                        Copy {{ $file->copy_number }}
+                                    </span>
                                 @endif
                             </div>
                             <span class="px-2 py-0.5 text-xs font-semibold rounded-full
                                 @if($file->status === 'at_registry') bg-green-100 text-green-700
                                 @elseif($file->status === 'in_transit') bg-orange-100 text-orange-700
-                                @elseif($file->status === 'received') bg-emerald-100 text-emerald-700
+                                @elseif($file->status === 'received') bg-gray-800 text-white
                                 @else bg-gray-100 text-gray-700
                                 @endif">
                                 {{ $file->getStatusLabel() }}
@@ -163,7 +168,7 @@
                         <h3 class="text-base sm:text-lg font-semibold text-gray-900">File Details</h3>
                         <p class="text-sm text-gray-500 mt-1">{{ $selectedFile->getDisplayFileNo() }}</p>
                         @if($selectedFile->is_copy)
-                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-700 mt-1">
+                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-orange-100 text-orange-700 mt-1">
                             Copy {{ $selectedFile->copy_number }} of {{ $selectedFile->original_file_no }}
                         </span>
                         @endif
@@ -177,7 +182,7 @@
                 </div>
                 <div class="px-4 sm:px-6 py-4 sm:py-5">
                     @if($selectedFile->is_copy && $selectedFile->original_file_no)
-                    <div class="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                    <div class="mb-4 p-3 bg-orange-50 border border-orange-200 rounded-lg">
                         <p class="text-sm text-blue-700">
                             <span class="font-medium">This is a copy of:</span>
                             <a href="#" wire:click="fileNumber = '{{ $selectedFile->original_file_no }}'; search()"
@@ -218,7 +223,7 @@
                                         <span class="px-3 py-1 text-xs font-semibold rounded-full
                                             @if($selectedFile->status === 'at_registry') bg-green-100 text-green-700
                                             @elseif($selectedFile->status === 'in_transit') bg-orange-100 text-orange-700
-                                            @elseif($selectedFile->status === 'received') bg-emerald-100 text-emerald-700
+                                            @elseif($selectedFile->status === 'received') bg-gray-800 text-white
                                             @else bg-gray-100 text-gray-700
                                             @endif">
                                             {{ $selectedFile->getStatusLabel() }}
@@ -273,7 +278,7 @@
                                 <li class="py-2 flex items-center justify-between">
                                     <div>
                                         <span class="text-sm font-medium text-gray-900">{{ $copy->new_file_no }}</span>
-                                        <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-700">
+                                        <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-orange-100 text-orange-700">
                                             Copy {{ $copy->copy_number }}
                                         </span>
                                     </div>
@@ -331,15 +336,15 @@
                                             <div class="flex flex-col sm:flex-row sm:justify-between sm:space-x-4">
                                                 <div class="flex-1">
                                                     <p class="text-sm text-gray-700">
-                                                        <span class="font-medium text-gray-900">{{ $movement->sender->name }}</span> sent to
-                                                        <span class="font-medium text-gray-900">{{ $movement->intendedReceiver->name }}</span>
+                                                        <span class="font-medium text-gray-900">{{ $movement->sender->name ?? 'Unknown' }}</span> sent to
+                                                        <span class="font-medium text-gray-900">{{ $movement->intendedReceiver->name ?? 'Unknown' }}</span>
                                                     </p>
                                                     <p class="text-xs text-gray-500 mt-1">
-                                                        {{ $movement->sender->position }} &rarr; {{ $movement->intendedReceiver->position }}
+                                                        {{ $movement->sender->positionTitle ?? 'N/A' }} &rarr; {{ $movement->intendedReceiver->positionTitle ?? 'N/A' }}
                                                     </p>
                                                     @if($movement->movement_status === 'received')
                                                     <p class="text-xs text-green-600 mt-1">
-                                                        &#10003; Received by {{ $movement->actualReceiver->name }} on {{ $movement->received_at->format('d M Y, h:i A') }}
+                                                        &#10003; Received by {{ $movement->actualReceiver->name ?? 'Unknown' }} on {{ $movement->received_at->format('d M Y, h:i A') }}
                                                     </p>
                                                     @endif
                                                     @if($movement->sender_comments)

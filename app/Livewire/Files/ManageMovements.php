@@ -22,6 +22,7 @@ class ManageMovements extends Component
     public $selectedMovements = [];
     public $showDeleteModal = false;
     public $selectAll = false;
+    public $deletingId = null;
 
     public function getSelectedCountProperty()
     {
@@ -149,9 +150,12 @@ class ManageMovements extends Component
 
     public function deleteMovement($movementId)
     {
+        $this->deletingId = $movementId;
+        
         $movement = FileMovement::findOrFail($movementId);
         $movement->delete();
 
+        $this->deletingId = null;
         $this->toastSuccess('Movement Deleted', 'File movement has been deleted successfully.');
     }
 

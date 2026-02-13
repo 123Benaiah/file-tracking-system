@@ -10,7 +10,7 @@
                             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
                             </svg>
-                            {{ auth()->user()->department }}
+                                                        {{ auth()->user()->departmentRel?->name ?? (auth()->user()->unitRel?->department?->name ?? 'N/A') }}
                         </p>
                     </div>
                     <div class="hidden sm:block">
@@ -81,7 +81,7 @@
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-6 mb-4 sm:mb-6">
                 <a href="{{ route('files.receive') }}" wire:navigate class="bg-white rounded-xl shadow-md p-4 sm:p-6 hover:shadow-lg transition-all duration-300 group">
                     <div class="flex items-center">
-                        <div class="p-2 sm:p-3 rounded-xl bg-gradient-to-br from-green-500 to-emerald-600 shadow-lg shadow-green-500/20 group-hover:scale-110 transition-transform">
+                        <div class="p-2 sm:p-3 rounded-xl bg-gradient-to-br from-green-500 to-green-600 shadow-lg shadow-green-500/20 group-hover:scale-110 transition-transform">
                             <svg class="w-5 h-5 sm:w-6 sm:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                             </svg>
@@ -109,13 +109,13 @@
 
                 <button wire:click="openAllFilesModal" class="bg-white rounded-xl shadow-md p-4 sm:p-6 hover:shadow-lg transition-all duration-300 text-left w-full group">
                     <div class="flex items-center">
-                        <div class="p-2 sm:p-3 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 shadow-lg shadow-blue-500/20 group-hover:scale-110 transition-transform">
+                        <div class="p-2 sm:p-3 rounded-xl bg-gradient-to-br from-green-500 to-green-600 shadow-lg shadow-green-500/20 group-hover:scale-110 transition-transform">
                             <svg class="w-5 h-5 sm:w-6 sm:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"></path>
                             </svg>
                         </div>
                         <div class="ml-3 sm:ml-4">
-                            <h3 class="text-base sm:text-lg font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">All Files</h3>
+                            <h3 class="text-base sm:text-lg font-semibold text-gray-900 group-hover:text-green-600 transition-colors">All Files</h3>
                             <p class="text-xs sm:text-sm text-gray-500"><span class="hidden sm:inline">View all </span>{{ $stats['all_files'] }} <span class="hidden sm:inline">department</span> files</p>
                         </div>
                     </div>
@@ -148,8 +148,8 @@
                                 </div>
                                 <p class="text-sm text-gray-500 mt-1">{{ Str::limit($movement->file->subject, 60) }}</p>
                                 <p class="text-xs text-gray-400 mt-1">
-                                    From: {{ $movement->sender->name }}
-                                    <span class="hidden sm:inline">({{ $movement->sender->department }})</span>
+                                    From: {{ $movement->sender->name ?? 'Unknown' }}
+                                    <span class="hidden sm:inline">({{ $movement->sender->departmentRel?->name ?? ($movement->sender->unitRel?->department?->name ?? 'N/A') }})</span>
                                     <span class="sm:hidden block">{{ $movement->sent_at->format('d M Y') }}</span>
                                     <span class="hidden sm:inline">| Sent: {{ $movement->sent_at->format('d M Y, h:i A') }}</span>
                                 </p>
@@ -158,7 +158,7 @@
                                 <button wire:click="confirmReceipt({{ $movement->id }})"
                                         wire:loading.attr="disabled"
                                         wire:target="confirmReceipt({{ $movement->id }})"
-                                        class="inline-flex items-center px-3 py-2 sm:py-1.5 text-xs font-medium rounded-lg text-white bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 shadow-sm transition-all w-full sm:w-auto justify-center disabled:opacity-75 disabled:cursor-not-allowed">
+                                        class="inline-flex items-center px-3 py-2 sm:py-1.5 text-xs font-medium rounded-lg text-white bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 shadow-sm transition-all w-full sm:w-auto justify-center disabled:opacity-75 disabled:cursor-not-allowed">
                                     <svg wire:loading wire:target="confirmReceipt({{ $movement->id }})" class="animate-spin -ml-1 mr-1 h-4 w-4 sm:h-3 sm:w-3 text-white" fill="none" viewBox="0 0 24 24">
                                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
@@ -213,7 +213,7 @@
                                 <p class="text-sm text-gray-500 mt-1">{{ Str::limit($movement->file->subject, 60) }}</p>
                                 <p class="text-xs text-gray-400 mt-1">
                                     To: {{ $movement->intendedReceiver->name ?? 'Unknown' }}
-                                    <span class="hidden sm:inline">({{ $movement->intendedReceiver->department ?? '' }})</span>
+                                    <span class="hidden sm:inline">({{ $movement->intendedReceiver->departmentRel?->name ?? ($movement->intendedReceiver->unitRel?->department?->name ?? '') }})</span>
                                     <span class="sm:hidden block">{{ $movement->sent_at->format('d M Y') }}</span>
                                     <span class="hidden sm:inline">| Sent: {{ $movement->sent_at->format('d M Y, h:i A') }}</span>
                                 </p>
@@ -241,13 +241,18 @@
             <!-- Recently Received Section -->
             @if(isset($recentlyReceived) && $recentlyReceived->count() > 0)
             <div class="bg-white rounded-xl shadow-md mb-4 sm:mb-6 overflow-hidden">
-                <div class="px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-100 flex items-center">
-                    <svg class="w-5 h-5 mr-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                <div class="px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-100 flex items-center justify-between cursor-pointer" wire:click="toggleRecentlyReceived">
+                    <div class="flex items-center">
+                        <svg class="w-5 h-5 mr-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <h3 class="text-base sm:text-lg font-semibold text-gray-800">Recently Received</h3>
+                    </div>
+                    <svg class="w-5 h-5 text-gray-400 transform transition-transform {{ $showRecentlyReceived ? 'rotate-180' : '' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                     </svg>
-                    <h3 class="text-base sm:text-lg font-semibold text-gray-800">Recently Received</h3>
                 </div>
-                <div class="divide-y divide-gray-100">
+                <div class="divide-y divide-gray-100 {{ $showRecentlyReceived ? '' : 'hidden' }}">
                     @foreach($recentlyReceived as $movement)
                     <div class="px-4 sm:px-6 py-3 sm:py-4 hover:bg-gray-50 transition-colors">
                         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
@@ -264,8 +269,8 @@
                                 </div>
                                 <p class="text-sm text-gray-500 mt-1">{{ Str::limit($movement->file->subject, 60) }}</p>
                                 <p class="text-xs text-gray-400 mt-1">
-                                    From: {{ $movement->sender->name }}
-                                    <span class="hidden sm:inline">({{ $movement->sender->department }})</span>
+                                    From: {{ $movement->sender->name ?? 'Unknown' }}
+                                    <span class="hidden sm:inline">({{ $movement->sender->departmentRel?->name ?? ($movement->sender->unitRel?->department?->name ?? 'N/A') }})</span>
                                     <span class="hidden sm:inline">| Received: {{ $movement->received_at->format('d M Y, h:i A') }}</span>
                                 </p>
                             </div>
@@ -287,13 +292,35 @@
             @endif
 
             <!-- My Current Files -->
-            @if($myFiles->count() > 0)
+            @if($myFiles->count() > 0 || $search)
             <div class="bg-white rounded-xl shadow-md overflow-hidden">
-                <div class="px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-100 flex items-center">
-                    <svg class="w-5 h-5 mr-2 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                    </svg>
-                    <h3 class="text-base sm:text-lg font-semibold text-gray-800">My Current Files</h3>
+                <div class="px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                    <div class="flex items-center">
+                        <svg class="w-5 h-5 mr-2 text-orange-500" stroke="current" fill="noneColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                        <h3 class="text-base sm:text-lg font-semibold text-gray-800">My Current Files</h3>
+                    </div>
+                    <div class="flex w-full sm:w-auto gap-2">
+                        <select wire:model.live="statusFilter" id="statusFilter"
+                                class="bg-white border-gray-300 rounded-lg focus:border-orange-500 focus:ring-orange-500 text-sm">
+                            <option value="">All Status</option>
+                            <option value="at_registry">At Registry</option>
+                            <option value="in_transit">In Transit</option>
+                            <option value="received">Received</option>
+                            <option value="completed">Completed</option>
+                        </select>
+                        <div class="flex flex-1">
+                            <input type="text" wire:model.live="search" id="myFilesSearch" placeholder="Search files..."
+                                   class="flex-1 sm:flex-none sm:w-40 border-gray-300 rounded-l-lg focus:border-orange-500 focus:ring-orange-500 text-sm">
+                            <button wire:click="$refresh"
+                                    class="px-3 py-2 bg-gradient-to-r from-orange-500 to-amber-500 text-white rounded-r-lg hover:from-orange-600 hover:to-amber-600 transition-all text-sm font-medium">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Desktop Table -->

@@ -26,12 +26,34 @@ class File extends Model
         'date_registered',
         'current_holder',
         'registered_by',
+        'merged_into_file_id',
+        'merged_at',
+        'merged_by',
+        'merged_file_numbers',
     ];
 
     protected $casts = [
         'due_date' => 'date',
-        'date_registered' => 'date',
+        'date_registered' => 'datetime',
+        'merged_at' => 'datetime',
+        'merged_file_numbers' => 'array',
     ];
+
+    public function resolveRouteBinding($value, $field = null)
+    {
+        // First try to find by ID
+        if (is_numeric($value)) {
+            $file = static::find($value);
+            if ($file) {
+                return $file;
+            }
+        }
+
+        // Try new_file_no or old_file_no
+        return static::where('new_file_no', $value)
+            ->orWhere('old_file_no', $value)
+            ->firstOrFail();
+    }
 
     // Relationships
     public function currentHolder()
@@ -62,13 +84,13 @@ class File extends Model
     // Scopes
     public function scopeActive($query)
     {
-        return $query->whereNotIn('status', ['archived', 'completed']);
+        return $query->whereNotIn('status', ['archived']);
     }
 
     public function scopeOverdue($query)
     {
         return $query->where('due_date', '<', now())
-            ->whereNotIn('status', ['completed', 'archived']);
+            ->whereNotIn('status', ['archived']);
     }
 
     public function scopeInDepartment($query, $department)
@@ -189,7 +211,11 @@ class File extends Model
 
     public function getNextCopyNumber()
     {
-        $maxCopy = static::where('original_file_no', $this->new_file_no)
+        $maxCopy = static::where(function ($query) {
+                $query->where('original_file_no', $this->new_file_no)
+                      ->orWhere('new_file_no', 'like', $this->new_file_no . '-copy%');
+            })
+            ->withTrashed()
             ->max('copy_number');
 
         return ($maxCopy ?? 0) + 1;
@@ -208,9 +234,14 @@ class File extends Model
 
     public function canBeSentBy(Employee $employee)
     {
-        // Any file at registry can be sent by anyone
+        // Any file at registry can be sent by registry staff
         if ($this->status === 'at_registry') {
-            return true;
+            return $employee->isRegistryStaff();
+        }
+
+        // Completed files can ONLY be resent by HRA registry staff
+        if ($this->status === 'completed') {
+            return $employee->canResendFiles();
         }
 
         // User must be current holder for files outside registry

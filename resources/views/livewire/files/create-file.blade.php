@@ -40,11 +40,11 @@
                             @error('copyOfFileNo') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
 
                             @if($copyOfFileData)
-                            <div class="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                                <p class="text-sm font-medium text-blue-800">Original File Found:</p>
-                                <p class="text-sm text-blue-700"><span class="font-medium">File No:</span> {{ $copyOfFileData['new_file_no'] }}</p>
-                                <p class="text-sm text-blue-700"><span class="font-medium">Subject:</span> {{ $copyOfFileData['subject'] }}</p>
-                                <p class="text-sm text-blue-700"><span class="font-medium">Status:</span> {{ ucfirst(str_replace('_', ' ', $copyOfFileData['status'])) }}</p>
+                            <div class="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg">
+                                <p class="text-sm font-medium text-green-800">Original File Found:</p>
+                                <p class="text-sm text-green-700"><span class="font-medium">File No:</span> {{ $copyOfFileData['new_file_no'] }}</p>
+                                <p class="text-sm text-green-700"><span class="font-medium">Subject:</span> {{ $copyOfFileData['subject'] }}</p>
+                                <p class="text-sm text-green-700"><span class="font-medium">Status:</span> {{ ucfirst(str_replace('_', ' ', $copyOfFileData['status'])) }}</p>
                                 <p class="text-sm text-green-700 mt-1"><span class="font-medium">New Copy Number:</span> {{ $copyOfFileData['new_file_no'] }}-copy{{ $copyOfFileData['next_copy_number'] }}</p>
                             </div>
                             @elseif(!empty($copyOfFileNo) && strlen($copyOfFileNo) >= 3)

@@ -156,15 +156,15 @@
                                             <div class="flex flex-col sm:flex-row sm:justify-between sm:space-x-4">
                                                 <div class="flex-1">
                                                     <p class="text-sm text-gray-700">
-                                                        <span class="font-medium text-gray-900">{{ $movement->sender->name }}</span> sent to
-                                                        <span class="font-medium text-gray-900">{{ $movement->intendedReceiver->name }}</span>
+                                                        <span class="font-medium text-gray-900">{{ $movement->sender->name ?? 'Unknown' }}</span> sent to
+                                                        <span class="font-medium text-gray-900">{{ $movement->intendedReceiver->name ?? 'Unknown' }}</span>
                                                     </p>
                                                     <p class="text-xs text-gray-500 mt-1">
-                                                        {{ $movement->sender->position }} &rarr; {{ $movement->intendedReceiver->position }}
+                                                        {{ $movement->sender->positionTitle ?? 'N/A' }} &rarr; {{ $movement->intendedReceiver->positionTitle ?? 'N/A' }}
                                                     </p>
                                                     @if($movement->movement_status === 'received')
                                                     <p class="text-xs text-green-600 mt-1">
-                                                        &#10003; Received by {{ $movement->actualReceiver->name }} on {{ $movement->received_at->format('d M Y, h:i A') }}
+                                                        &#10003; Received by {{ $movement->actualReceiver->name ?? 'Unknown' }} on {{ $movement->received_at->format('d M Y, h:i A') }}
                                                     </p>
                                                     @endif
                                                     @if($movement->sender_comments)

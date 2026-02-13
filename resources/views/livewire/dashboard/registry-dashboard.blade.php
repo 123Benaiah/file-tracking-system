@@ -20,7 +20,7 @@
             <!-- At Registry -->
             <div class="bg-white rounded-xl shadow-md p-3 sm:p-5 hover:shadow-lg transition-all duration-300">
                 <div class="flex items-center">
-                    <div class="p-2 sm:p-3 rounded-xl bg-gradient-to-br from-emerald-500 to-green-600 shadow-lg shadow-emerald-500/20">
+                    <div class="p-2 sm:p-3 rounded-xl bg-gradient-to-br from-green-500 to-green-600 shadow-lg shadow-green-500/20">
                         <svg class="w-5 h-5 sm:w-6 sm:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"></path>
                         </svg>
@@ -90,8 +90,8 @@
                             </div>
                             <p class="text-sm text-gray-500 mt-1">{{ Str::limit($movement->file->subject, 60) }}</p>
                             <p class="text-xs text-gray-400 mt-1">
-                                From: {{ $movement->sender->name }}
-                                <span class="hidden sm:inline">({{ $movement->sender->department }})</span>
+                                From: {{ $movement->sender->name ?? 'Unknown' }}
+                                <span class="hidden sm:inline">({{ $movement->sender->departmentRel?->name ?? ($movement->sender->unitRel?->department?->name ?? 'N/A') }})</span>
                                 <span class="sm:hidden block">{{ $movement->sent_at->format('d M Y') }}</span>
                                 <span class="hidden sm:inline">| Sent: {{ $movement->sent_at->format('d M Y, h:i A') }}</span>
                             </p>
@@ -100,7 +100,7 @@
                             <button wire:click="confirmReceipt({{ $movement->id }})"
                                     wire:loading.attr="disabled"
                                     wire:target="confirmReceipt({{ $movement->id }})"
-                                    class="inline-flex items-center px-3 py-2 sm:py-1.5 text-xs font-medium rounded-lg text-white bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 shadow-sm transition-all w-full sm:w-auto justify-center disabled:opacity-75 disabled:cursor-not-allowed">
+                                    class="inline-flex items-center px-3 py-2 sm:py-1.5 text-xs font-medium rounded-lg text-white bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 shadow-sm transition-all w-full sm:w-auto justify-center disabled:opacity-75 disabled:cursor-not-allowed">
                                 <svg wire:loading wire:target="confirmReceipt({{ $movement->id }})" class="animate-spin -ml-1 mr-1 h-4 w-4 sm:h-3 sm:w-3 text-white" fill="none" viewBox="0 0 24 24">
                                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
@@ -127,13 +127,17 @@
         <!-- Recently Received Section -->
         @if(isset($recentlyReceived) && $recentlyReceived->count() > 0)
         <div class="bg-white rounded-xl shadow-md mb-4 sm:mb-6 overflow-hidden">
-            <div class="px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-100 flex items-center">
+            <div class="px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-100 flex items-center cursor-pointer hover:bg-gray-50 transition-colors" wire:click="toggleRecentlyReceived">
                 <svg class="w-5 h-5 mr-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                 </svg>
-                <h3 class="text-base sm:text-lg font-semibold text-gray-800">Recently Received</h3>
+                <h3 class="text-base sm:text-lg font-semibold text-gray-800 flex-1">Recently Received</h3>
+                <span class="mr-2 text-xs text-gray-500">{{ $recentlyReceived->count() }} files</span>
+                <svg class="w-5 h-5 text-gray-400 transform transition-transform {{ $showRecentlyReceived ? 'rotate-180' : '' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                </svg>
             </div>
-            <div class="divide-y divide-gray-100">
+            <div class="divide-y divide-gray-100 {{ $showRecentlyReceived ? '' : 'hidden' }}">
                 @foreach($recentlyReceived as $movement)
                 <div class="px-4 sm:px-6 py-3 sm:py-4 hover:bg-gray-50 transition-colors">
                     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
@@ -150,8 +154,8 @@
                             </div>
                             <p class="text-sm text-gray-500 mt-1">{{ Str::limit($movement->file->subject, 60) }}</p>
                             <p class="text-xs text-gray-400 mt-1">
-                                From: {{ $movement->sender->name }}
-                                <span class="hidden sm:inline">({{ $movement->sender->department }})</span>
+                                From: {{ $movement->sender->name ?? 'Unknown' }}
+                                <span class="hidden sm:inline">({{ $movement->sender->departmentRel?->name ?? ($movement->sender->unitRel?->department?->name ?? 'N/A') }})</span>
                                 <span class="hidden sm:inline">| Received: {{ $movement->received_at->format('d M Y, h:i A') }}</span>
                             </p>
                         </div>
@@ -175,21 +179,24 @@
         <!-- Sent Files Pending Confirmation -->
         @if($sentPendingConfirmation->count() > 0)
         <div class="bg-white rounded-xl shadow-md mb-4 sm:mb-6 overflow-hidden">
-            <div class="px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-100 flex items-center">
+            <div class="px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-100 flex items-center cursor-pointer hover:bg-gray-50 transition-colors" wire:click="toggleSentPending">
                 <svg class="w-5 h-5 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
                 </svg>
-                <h3 class="text-base sm:text-lg font-semibold text-gray-800">Sent - Pending Confirmation</h3>
-                <span class="ml-2 px-2 py-0.5 text-xs font-semibold rounded-full bg-blue-100 text-blue-700">{{ $stats['sent_pending'] }}</span>
+                <h3 class="text-base sm:text-lg font-semibold text-gray-800 flex-1">Sent - Pending Confirmation</h3>
+                <span class="mr-2 text-xs text-gray-500">{{ $sentPendingConfirmation->count() }} files</span>
+                <svg class="w-5 h-5 text-gray-400 transform transition-transform {{ $showSentPending ? 'rotate-180' : '' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                </svg>
             </div>
-            <div class="divide-y divide-gray-100">
+            <div class="divide-y divide-gray-100 {{ $showSentPending ? '' : 'hidden' }}">
                 @foreach($sentPendingConfirmation as $movement)
                 <div class="px-4 sm:px-6 py-3 sm:py-4 hover:bg-gray-50 transition-colors">
                     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                         <div class="flex-1">
                             <div class="flex flex-wrap items-center gap-2">
                                 <span class="text-sm font-medium text-gray-900">{{ $movement->file->new_file_no }}</span>
-                                <span class="px-2 py-0.5 text-xs font-semibold rounded-full bg-blue-100 text-blue-700">
+                                <span class="px-2 py-0.5 text-xs font-semibold rounded-full bg-orange-100 text-orange-700">
                                     Sent
                                 </span>
                                 <span class="px-2 py-0.5 text-xs font-semibold rounded-full
@@ -203,13 +210,13 @@
                             <p class="text-sm text-gray-500 mt-1">{{ Str::limit($movement->file->subject, 60) }}</p>
                             <p class="text-xs text-gray-400 mt-1">
                                 To: {{ $movement->intendedReceiver->name ?? 'Unknown' }}
-                                <span class="hidden sm:inline">({{ $movement->intendedReceiver->department ?? '' }})</span>
+                                <span class="hidden sm:inline">({{ $movement->intendedReceiver->departmentRel?->name ?? ($movement->intendedReceiver->unitRel?->department?->name ?? '') }})</span>
                                 <span class="sm:hidden block">{{ $movement->sent_at->format('d M Y') }}</span>
                                 <span class="hidden sm:inline">| Sent: {{ $movement->sent_at->format('d M Y, h:i A') }}</span>
                             </p>
                         </div>
                         <div class="flex-shrink-0">
-                            <span class="inline-flex items-center px-3 py-2 sm:py-1.5 text-xs font-medium rounded-lg text-blue-700 bg-blue-50">
+                            <span class="inline-flex items-center px-3 py-2 sm:py-1.5 text-xs font-medium rounded-lg text-orange-700 bg-orange-50">
                                 <svg class="w-4 h-4 sm:w-3 sm:h-3 mr-1 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                 </svg>
@@ -220,7 +227,7 @@
                 </div>
                 @endforeach
             </div>
-            <div class="px-4 sm:px-6 py-3 bg-gray-50 border-t border-gray-100">
+            <div class="px-4 sm:px-6 py-3 bg-gray-50 border-t border-gray-100 {{ $showSentPending ? '' : 'hidden' }}">
                 <p class="text-xs text-gray-500">
                     These files are still in your possession until the recipient confirms receipt.
                 </p>
@@ -364,7 +371,15 @@
                             Delete Selected ({{ $this->selectedCount }})
                         </button>
                         @endif
-                        @if(auth()->user()->canRegisterFiles())
+                        @if(auth()->user()->isRegistryHead())
+                        <a href="{{ route('files.merge') }}"
+                           class="px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium text-white bg-gradient-to-r from-green-500 to-green-600 rounded-lg hover:from-green-600 hover:to-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 shadow-lg shadow-green-500/25 transition-all duration-300 inline-flex items-center flex-1 sm:flex-none justify-center">
+                            <svg class="w-4 h-4 mr-1 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                            </svg>
+                            <span class="hidden sm:inline">Merge Files</span>
+                            <span class="sm:hidden">Merge</span>
+                        </a>
                         <a href="{{ route('files.create') }}"
                            class="px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium text-white bg-gradient-to-r from-orange-500 to-orange-600 rounded-lg hover:from-orange-600 hover:to-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 shadow-lg shadow-orange-500/25 transition-all duration-300 inline-flex items-center flex-1 sm:flex-none justify-center">
                             <svg class="w-4 h-4 mr-1 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -419,7 +434,7 @@
                                             {{ ucfirst($file->priority) }}
                                         </span>
                                         @if($file->confidentiality != 'public')
-                                        <span class="px-2 py-1 text-xs font-medium rounded-full bg-purple-100 text-purple-700">
+                                        <span class="px-2 py-1 text-xs font-medium rounded-full bg-gray-200 text-gray-800">
                                             {{ ucfirst($file->confidentiality) }}
                                         </span>
                                         @endif
@@ -429,7 +444,7 @@
                             <td class="px-6 py-4">
                                 @if($file->currentHolder)
                                 <div class="text-sm text-gray-900 font-medium">{{ $file->currentHolder->name }}</div>
-                                <div class="text-sm text-gray-500">{{ $file->currentHolder->department }}</div>
+                                <div class="text-sm text-gray-500">{{ $file->currentHolder->departmentRel?->name ?? ($file->currentHolder->unitRel?->department?->name ?? 'N/A') }}</div>
                                 @elseif($file->latestMovement)
                                 <div class="text-sm text-orange-600 font-medium">Awaiting Receipt by:</div>
                                 <div class="text-sm text-gray-500">{{ $file->latestMovement->intendedReceiver->name ?? 'N/A' }}</div>
@@ -441,8 +456,8 @@
                                 <span class="px-3 py-1 text-xs font-semibold rounded-full
                                     {{ $file->status == 'at_registry' ? 'bg-green-100 text-green-700' :
                                        ($file->status == 'in_transit' ? 'bg-orange-100 text-orange-700' :
-                                       ($file->status == 'received' ? 'bg-emerald-100 text-emerald-700' :
-                                       ($file->status == 'under_review' ? 'bg-purple-100 text-purple-700' : 'bg-gray-100 text-gray-700'))) }}">
+                                       ($file->status == 'received' ? 'bg-gray-800 text-white' :
+                                       ($file->status == 'under_review' ? 'bg-gray-200 text-gray-800' : 'bg-gray-100 text-gray-700'))) }}">
                                     {{ $file->getStatusLabel() }}
                                 </span>
                                 @if($file->isOverdue())
@@ -464,13 +479,13 @@
                             </td>
                             <td class="px-6 py-4">
                                 <div class="flex flex-wrap gap-2">
-                                    @if($file->status == 'at_registry')
+                                    @if(($file->status == 'at_registry' || ($file->status == 'completed' && auth()->user()->canResendFiles())) && auth()->user()->canResendFiles())
                                     <a href="{{ route('files.send', $file) }}"
                                        class="inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-lg text-white bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 shadow-sm transition-all">
                                         <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
                                         </svg>
-                                        Send
+                                        {{ $file->status == 'completed' ? 'Resend' : 'Send' }}
                                     </a>
                                     @endif
                                     <a href="{{ route('files.show', $file) }}"
@@ -554,7 +569,7 @@
                             {{ ucfirst($file->priority) }}
                         </span>
                         @if($file->confidentiality != 'public')
-                        <span class="px-2 py-1 text-xs font-medium rounded-full bg-purple-100 text-purple-700">
+                        <span class="px-2 py-1 text-xs font-medium rounded-full bg-gray-200 text-gray-800">
                             {{ ucfirst($file->confidentiality) }}
                         </span>
                         @endif
@@ -595,13 +610,13 @@
 
                     <!-- Actions -->
                     <div class="flex flex-wrap gap-2 pt-3 border-t border-gray-100">
-                        @if($file->status == 'at_registry' && auth()->user()->isRegistryStaff())
+                        @if(($file->status == 'at_registry' || ($file->status == 'completed' && auth()->user()->canResendFiles())) && auth()->user()->canResendFiles())
                         <a href="{{ route('files.send', $file) }}"
                            class="flex-1 inline-flex items-center justify-center px-3 py-2 text-xs font-medium rounded-lg text-white bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 shadow-sm transition-all">
                             <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
                             </svg>
-                            Send
+                            {{ $file->status == 'completed' ? 'Resend' : 'Send' }}
                         </a>
                         @endif
                         <a href="{{ route('files.show', $file) }}"

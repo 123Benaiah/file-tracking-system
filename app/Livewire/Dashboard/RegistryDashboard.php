@@ -27,6 +27,10 @@ class RegistryDashboard extends Component
 
     public $showFilters = false;
 
+    public $showRecentlyReceived = false;
+
+    public $showSentPending = false;
+
     public $selectedFiles = [];
 
     public $selectAll = false;
@@ -88,6 +92,16 @@ class RegistryDashboard extends Component
         $this->showFilters = ! $this->showFilters;
     }
 
+    public function toggleRecentlyReceived()
+    {
+        $this->showRecentlyReceived = ! $this->showRecentlyReceived;
+    }
+
+    public function toggleSentPending()
+    {
+        $this->showSentPending = ! $this->showSentPending;
+    }
+
     public function updatedSelectAll($value)
     {
         if ($value) {
@@ -105,6 +119,7 @@ class RegistryDashboard extends Component
     protected function getFilteredQuery()
     {
         return File::query()
+            ->where('status', '!=', 'merged')
             ->when($this->search, function ($query) {
                 $query->where(function ($q) {
                     $q->where('subject', 'like', '%'.$this->search.'%')
@@ -166,11 +181,11 @@ class RegistryDashboard extends Component
     {
         if ($type === 'selected' && ! empty($this->selectedFiles)) {
             $files = File::whereIn('id', $this->selectedFiles)
-                ->with(['currentHolder'])
+                ->with(['currentHolder.departmentRel', 'currentHolder.unitRel.department'])
                 ->get();
         } else {
             $files = $this->getFilteredQuery()
-                ->with(['currentHolder'])
+                ->with(['currentHolder.departmentRel', 'currentHolder.unitRel.department'])
                 ->get();
         }
 
@@ -201,8 +216,9 @@ class RegistryDashboard extends Component
             return;
         }
 
+        $user = auth()->user();
         // Verify this user is the intended receiver
-        if ($movement->intended_receiver_emp_no !== auth()->user()->employee_number) {
+        if ($movement->intended_receiver_emp_no !== $user->employee_number) {
             $this->toastError('Unauthorized', 'You are not authorized to receive this file.');
 
             return;
@@ -210,28 +226,31 @@ class RegistryDashboard extends Component
 
         // Update the movement
         $movement->update([
-            'actual_receiver_emp_no' => auth()->user()->employee_number,
+            'actual_receiver_emp_no' => $user->employee_number,
             'received_at' => now(),
             'movement_status' => 'received',
         ]);
 
-        // Update the file status and current holder
+        // Update the file status - when received at registry, mark as completed
         $movement->file->update([
-            'status' => 'received',
-            'current_holder' => auth()->user()->employee_number,
+            'status' => 'completed',
+            'current_holder' => $user->employee_number,
         ]);
 
         // Log the action
         \App\Models\AuditLog::create([
-            'employee_number' => auth()->user()->employee_number,
-            'action' => 'file_received',
-            'description' => 'Received file '.$movement->file->new_file_no.' from '.$movement->sender_emp_no,
+            'employee_number' => $user->employee_number,
+            'action' => 'file_returned_to_registry',
+            'description' => 'Returned file '.$movement->file->new_file_no.' to registry',
             'ip_address' => request()->ip(),
             'user_agent' => request()->userAgent(),
             'new_data' => $movement->fresh()->toArray(),
         ]);
 
-        $this->toastSuccess('File Received', 'File "'.$movement->file->new_file_no.'" has been received successfully.');
+        $this->toastSuccess('File Returned to Registry', 'File "'.$movement->file->new_file_no.'" has been returned to registry and marked as completed.');
+
+        // Dispatch event to refresh navigation pending count
+        $this->dispatch('receipt-confirmed');
     }
 
     public function render()
@@ -239,21 +258,27 @@ class RegistryDashboard extends Component
         $user = auth()->user();
 
         $files = $this->getFilteredQuery()
-            ->with(['currentHolder', 'latestMovement.intendedReceiver', 'movements'])
+            ->with(['currentHolder.departmentRel', 'currentHolder.unitRel.department', 'latestMovement.intendedReceiver', 'movements'])
             ->orderBy('created_at', 'desc')
             ->paginate($this->perPage);
 
         // Pending receipts for this registry user (files sent TO me)
         $pendingReceipts = FileMovement::where('intended_receiver_emp_no', $user->employee_number)
             ->where('movement_status', 'sent')
-            ->with(['file', 'sender'])
+            ->whereHas('file', function ($q) {
+                $q->where('status', '!=', 'merged');
+            })
+            ->with(['file', 'sender.departmentRel', 'sender.unitRel.department'])
             ->orderBy('sent_at', 'desc')
             ->paginate(5, ['*'], 'pendingPage');
 
         // Files I've sent that are pending confirmation (files sent BY me)
         $sentPendingConfirmation = FileMovement::where('sender_emp_no', $user->employee_number)
             ->where('movement_status', 'sent')
-            ->with(['file', 'intendedReceiver'])
+            ->whereHas('file', function ($q) {
+                $q->where('status', '!=', 'merged');
+            })
+            ->with(['file', 'intendedReceiver.departmentRel', 'intendedReceiver.unitRel.department'])
             ->orderBy('sent_at', 'desc')
             ->paginate(5, ['*'], 'sentPendingPage');
 
@@ -288,7 +313,7 @@ class RegistryDashboard extends Component
 
         $recentlyReceived = FileMovement::where('actual_receiver_emp_no', $user->employee_number)
             ->where('movement_status', 'received')
-            ->with(['file', 'sender'])
+            ->with(['file', 'sender.departmentRel', 'sender.unitRel.department'])
             ->orderBy('received_at', 'desc')
             ->limit(2)
             ->get();

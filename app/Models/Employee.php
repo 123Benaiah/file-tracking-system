@@ -25,6 +25,8 @@ class Employee extends Authenticatable
         'office',
         'role',
         'is_active',
+        'is_registry_head',
+        'is_registry_staff',
         'created_by',
         'position_id',
         'department_id',
@@ -40,6 +42,8 @@ class Employee extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
         'is_active' => 'boolean',
+        'is_registry_head' => 'boolean',
+        'is_registry_staff' => 'boolean',
     ];
 
     public function getAuthIdentifierName()
@@ -52,33 +56,27 @@ class Employee extends Authenticatable
         return 'employee_number';
     }
 
-    // Position relationship
     public function position()
     {
         return $this->belongsTo(Position::class);
     }
 
-    // Department relationship (direct assignment)
     public function departmentRel()
     {
-        return $this->belongsTo(Department::class);
+        return $this->belongsTo(Department::class, 'department_id');
     }
 
-    // Unit relationship (direct assignment)
     public function unitRel()
     {
         return $this->belongsTo(Unit::class, 'unit_id');
     }
 
-    // Get effective department (unit's department if in unit, otherwise direct department)
     public function getEffectiveDepartment()
     {
-        // If employee belongs to a unit, get the unit's department
         if ($this->unit_id && $this->relationLoaded('unitRel')) {
-            return $this->unitRel?->departmentRel;
+            return $this->unitRel?->department;
         }
         
-        // Otherwise get the direct department
         if ($this->department_id) {
             if ($this->relationLoaded('departmentRel')) {
                 return $this->departmentRel;
@@ -89,7 +87,6 @@ class Employee extends Authenticatable
         return null;
     }
 
-    // Employment helpers
     public function isEmployedInUnit(): bool
     {
         return !is_null($this->unit_id);
@@ -130,7 +127,6 @@ class Employee extends Authenticatable
         return Position::where('id', $this->position_id)->value('is_management') ?? false;
     }
 
-    // Legacy relationships (for backward compatibility)
     public function organizationalUnit()
     {
         return $this->unitRel ?? $this->departmentRel;
@@ -177,7 +173,6 @@ class Employee extends Authenticatable
         return $this->hasMany(AuditLog::class, 'employee_number', 'employee_number');
     }
 
-    // Scopes
     public function scopeActive($query)
     {
         return $query->where('is_active', true);
@@ -203,7 +198,6 @@ class Employee extends Authenticatable
         });
     }
 
-    // Accessors for backward compatibility
     public function getDepartmentAttribute()
     {
         $dept = $this->getEffectiveDepartment();
@@ -226,59 +220,194 @@ class Employee extends Authenticatable
         return null;
     }
 
-    // Role-based access
-    public function isRegistryHead()
+    public function isAdmin(): bool
     {
-        return $this->role === 'registry_head';
+        return $this->role === 'admin';
     }
 
-    public function isRegistryClerk()
+    public function isRegistryHead(): bool
     {
-        return $this->role === 'registry_clerk';
+        // Use flag-based check first
+        if ($this->is_registry_head) {
+            return true;
+        }
+
+        // Fallback: check department/unit/position (deprecated, for backward compatibility)
+        if (!$this->unit_id || !$this->department_id || !$this->position_id) {
+            return false;
+        }
+
+        if (!$this->relationLoaded('unitRel')) {
+            $this->load(['unitRel']);
+        }
+        if (!$this->relationLoaded('departmentRel')) {
+            $this->load(['departmentRel']);
+        }
+        if (!$this->relationLoaded('position')) {
+            $this->load(['position']);
+        }
+
+        $unit = $this->unitRel;
+        $department = $this->departmentRel;
+        $position = $this->position;
+
+        if (!$unit || !$department || !$position) {
+            return false;
+        }
+
+        $deptName = strtolower($department->name);
+        $deptCode = strtolower($department->code);
+        $isHRA = $deptName === 'human resources and administration' || $deptCode === 'hra';
+
+        $isRegistryUnit = strtolower($unit->name) === 'registry';
+
+        $positionTitle = strtolower($position->title ?? '');
+        $isRegistryHeadPosition = strpos($positionTitle, 'registry head') !== false;
+
+        return $isHRA && $isRegistryUnit && $isRegistryHeadPosition;
     }
 
-    public function isRegistryStaff()
+    public function isRegistryStaff(): bool
     {
-        return $this->isRegistryHead() || $this->isRegistryClerk();
+        // Use flag-based check first
+        if ($this->is_registry_staff) {
+            return true;
+        }
+
+        return $this->isInRegistryUnit();
     }
 
-    public function isDepartmentHeadRole()
+    public function isInRegistryUnit(): bool
     {
-        return $this->role === 'department_head';
+        // Use flag-based check first
+        if ($this->relationLoaded('unitRel') && $this->unitRel?->is_registry_unit) {
+            return true;
+        }
+
+        if (!$this->unit_id) {
+            return false;
+        }
+
+        if (!$this->relationLoaded('unitRel')) {
+            $this->load(['unitRel']);
+        }
+
+        $unit = $this->unitRel;
+        if (!$unit) {
+            return false;
+        }
+
+        // Check flag first
+        if ($unit->is_registry_unit) {
+            return true;
+        }
+
+        // Fallback: check unit name (deprecated)
+        if (strtolower($unit->name) !== 'registry') {
+            return false;
+        }
+
+        if (!$this->department_id) {
+            return false;
+        }
+
+        if (!$this->relationLoaded('departmentRel')) {
+            $this->load(['departmentRel']);
+        }
+
+        $department = $this->departmentRel;
+        if (!$department) {
+            return false;
+        }
+
+        // Check flag first
+        if ($department->is_registry_department) {
+            return true;
+        }
+
+        // Fallback: check department name/code (deprecated)
+        $deptName = strtolower($department->name);
+        $deptCode = strtolower($department->code);
+
+        return $deptName === 'human resources and administration' || $deptCode === 'hra';
     }
 
-    public function canRegisterFiles()
+    public function canResendFiles(): bool
     {
-        return $this->isRegistryHead();
+        if (!$this->is_active) {
+            return false;
+        }
+
+        if ($this->isRegistryHead()) {
+            return true;
+        }
+
+        return $this->isInRegistryUnit();
     }
 
-    public function canManageUsers()
+    public function canRegisterFiles(): bool
     {
-        return $this->isRegistryHead();
+        return $this->isAdmin() || $this->isRegistryStaff();
     }
 
-    public function canSendFiles()
+    public function canManageUsers(): bool
+    {
+        return $this->isAdmin() || $this->isRegistryStaff();
+    }
+
+    public function canManageEmployees(): bool
+    {
+        return $this->isAdmin();
+    }
+
+    public function canAccessAdminPanel(): bool
+    {
+        return $this->isAdmin();
+    }
+
+    public function canAccessRegistry(): bool
+    {
+        return $this->isAdmin() || $this->isRegistryStaff();
+    }
+
+    public function canAccessDepartment(): bool
+    {
+        return $this->is_active && !$this->isRegistryHead();
+    }
+
+    public function canSendFiles(): bool
     {
         return $this->is_active;
     }
 
-    public function canReceiveFiles()
+    public function canReceiveFiles(): bool
     {
         return $this->is_active;
     }
 
-    public function canTrackFiles()
+    public function canTrackFiles(): bool
     {
         return $this->is_active;
     }
 
-    public function getRoleBadgeColor()
+    public function getRoleBadgeColor(): string
     {
         return match ($this->role) {
-            'registry_head' => 'purple',
-            'registry_clerk' => 'blue',
-            'department_head' => 'yellow',
+            'admin' => 'red',
             default => 'gray'
+        };
+    }
+
+    public function getRoleLabel(): string
+    {
+        if ($this->isRegistryHead()) {
+            return 'Registry Head';
+        }
+        
+        return match ($this->role) {
+            'admin' => 'Administrator',
+            'user' => 'User',
+            default => 'Unknown'
         };
     }
 }

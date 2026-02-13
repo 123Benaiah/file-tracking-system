@@ -16,10 +16,12 @@ class Department extends Model
         'description',
         'location',
         'has_units',
+        'is_registry_department',
     ];
 
     protected $casts = [
         'has_units' => 'boolean',
+        'is_registry_department' => 'boolean',
     ];
 
     // Relationships

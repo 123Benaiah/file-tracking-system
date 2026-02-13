@@ -16,6 +16,16 @@ class CheckDepartmentAccess
             abort(403, 'Your account is inactive. Contact administrator.');
         }
 
+        // Admins should use the admin panel, not the department dashboard
+        if ($user->isAdmin()) {
+            return redirect()->route('admin.dashboard');
+        }
+
+        // Registry head should use the registry dashboard
+        if ($user->isRegistryHead()) {
+            return redirect()->route('registry.dashboard');
+        }
+
         return $next($request);
     }
 }

@@ -26,11 +26,14 @@ class TrackFile extends Component
 
         $searchTerm = '%'.$this->fileNumber.'%';
 
-        $this->searchResults = File::where('new_file_no', 'like', $searchTerm)
-            ->orWhere('old_file_no', 'like', $searchTerm)
-            ->orWhere('original_file_no', 'like', $searchTerm)
-            ->orWhere('subject', 'like', $searchTerm)
-            ->orWhere('file_title', 'like', $searchTerm)
+        $this->searchResults = File::where('status', '!=', 'merged')
+            ->where(function ($q) use ($searchTerm) {
+                $q->where('new_file_no', 'like', $searchTerm)
+                    ->orWhere('old_file_no', 'like', $searchTerm)
+                    ->orWhere('original_file_no', 'like', $searchTerm)
+                    ->orWhere('subject', 'like', $searchTerm)
+                    ->orWhere('file_title', 'like', $searchTerm);
+            })
             ->with(['currentHolder', 'registeredBy'])
             ->get();
 

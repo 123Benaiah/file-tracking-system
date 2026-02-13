@@ -44,9 +44,6 @@
                             <select wire:model.live="roleFilter"
                                     class="w-full border-gray-300 rounded-md shadow-sm focus:border-green-500 focus:ring-green-500 text-sm">
                                 <option value="">All Roles</option>
-                                <option value="registry_head">Registry Head</option>
-                                <option value="registry_clerk">Registry Clerk</option>
-                                <option value="department_head">Department Head</option>
                                 <option value="user">User</option>
                             </select>
                         </div>
@@ -67,11 +64,18 @@
                     <div class="flex items-center gap-2">
                         <span class="text-sm text-gray-600">{{ $this->selectedCount }} selected</span>
                         <button wire:click="confirmDeleteSelected"
-                                class="inline-flex items-center px-3 py-2 border border-red-600 text-sm font-medium rounded-md text-red-600 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
-                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                wire:loading.attr="disabled"
+                                wire:loading.class="opacity-75 cursor-not-allowed"
+                                class="inline-flex items-center px-3 py-2 border border-red-600 text-sm font-medium rounded-md text-red-600 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-75 disabled:cursor-not-allowed">
+                            <svg wire:loading.remove wire:target="confirmDeleteSelected" class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 1 0 00-1-1h-4a1 1 1 0 00-1 1v3M4 7h16"></path>
                             </svg>
-                            Delete Selected
+                            <svg wire:loading wire:target="confirmDeleteSelected" class="animate-spin h-4 w-4 mr-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            <span wire:loading.remove wire:target="confirmDeleteSelected">Delete Selected</span>
+                            <span wire:loading wire:target="confirmDeleteSelected">Deleting...</span>
                         </button>
                     </div>
                     @endif
@@ -129,12 +133,7 @@
                                     @endif
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full
-                                        @if($employee->role === 'registry_head') bg-purple-100 text-purple-800
-                                        @elseif($employee->role === 'registry_clerk') bg-green-100 text-green-800
-                                        @elseif($employee->role === 'department_head') bg-yellow-100 text-yellow-800
-                                        @else bg-gray-100 text-gray-800
-                                        @endif">
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
                                         {{ ucwords(str_replace('_', ' ', $employee->role)) }}
                                     </span>
                                 </td>
@@ -187,12 +186,7 @@
                                 <div class="text-xs text-gray-500">{{ $employee->employee_number }}</div>
                             </div>
                         </div>
-                        <span class="px-2 py-0.5 text-xs font-semibold rounded-full
-                            @if($employee->role === 'registry_head') bg-purple-100 text-purple-800
-                            @elseif($employee->role === 'registry_clerk') bg-green-100 text-green-800
-                            @elseif($employee->role === 'department_head') bg-yellow-100 text-yellow-800
-                            @else bg-gray-100 text-gray-800
-                            @endif">
+                        <span class="px-2 py-0.5 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">
                             {{ ucwords(str_replace('_', ' ', $employee->role)) }}
                         </span>
                     </div>
@@ -325,9 +319,6 @@
                                 <select wire:model="role" id="role"
                                         class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm">
                                     <option value="user">User</option>
-                                    <option value="department_head">Department Head</option>
-                                    <option value="registry_clerk">Registry Clerk</option>
-                                    <option value="registry_head">Registry Head</option>
                                 </select>
                                 @error('role') <span class="text-red-600 text-xs">{{ $message }}</span> @enderror
                             </div>

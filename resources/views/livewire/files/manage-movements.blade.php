@@ -84,7 +84,7 @@
                                            class="h-4 w-4 text-orange-500 focus:ring-orange-500 border-gray-300 rounded cursor-pointer">
                                 </td>
                                 <td class="px-4 py-4 text-sm">
-                                    <div class="font-medium text-gray-900">{{ $movement->sender->name }}</div>
+                                    <div class="font-medium text-gray-900">{{ $movement->sender->name ?? 'Unknown' }}</div>
                                     <div class="text-gray-500">{{ $movement->sender->employee_number }}</div>
                                 </td>
                                 <td class="px-4 py-4 text-sm">
@@ -102,7 +102,18 @@
                                 <td class="px-4 py-4 text-sm text-gray-900">{{ $movement->received_at?->format('d M Y H:i') ?? 'N/A' }}</td>
                                 <td class="px-4 py-4 text-sm font-medium space-x-2">
                                     <button wire:click="openEditModal({{ $movement->id }})" class="text-gray-800 hover:text-gray-900">Edit</button>
-                                    <button wire:click="deleteMovement({{ $movement->id }})" wire:confirm="Are you sure you want to delete this movement?" class="text-red-600 hover:text-red-900">Delete</button>
+                                    <button wire:click="deleteMovement({{ $movement->id }})"
+                                            wire:loading.attr="disabled"
+                                            wire:confirm="Are you sure you want to delete this movement?"
+                                            class="text-red-600 hover:text-red-900 disabled:opacity-50 disabled:cursor-not-allowed">
+                                        <span wire:loading.remove wire:target="deleteMovement({{ $movement->id }})">Delete</span>
+                                        <span wire:loading wire:target="deleteMovement({{ $movement->id }})">
+                                            <svg class="animate-spin h-4 w-4 inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                            </svg>
+                                        </span>
+                                    </button>
                                 </td>
                             </tr>
                             @empty

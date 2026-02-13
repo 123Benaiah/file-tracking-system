@@ -31,6 +31,18 @@ class DepartmentDashboard extends Component
 
     public $allFilesPerPage = 10;
 
+    public $showRecentlyReceived = false;
+
+    public function mount()
+    {
+        $this->showRecentlyReceived = false;
+    }
+
+    public function toggleRecentlyReceived()
+    {
+        $this->showRecentlyReceived = ! $this->showRecentlyReceived;
+    }
+
     protected $queryString = [
         'search' => ['except' => ''],
         'statusFilter' => ['except' => ''],
@@ -87,25 +99,26 @@ class DepartmentDashboard extends Component
             return;
         }
 
-        if ($movement->intended_receiver_emp_no !== auth()->user()->employee_number) {
+        $user = auth()->user();
+        if ($movement->intended_receiver_emp_no !== $user->employee_number) {
             $this->toastError('Unauthorized', 'You are not authorized to receive this file.');
 
             return;
         }
 
         $movement->update([
-            'actual_receiver_emp_no' => auth()->user()->employee_number,
+            'actual_receiver_emp_no' => $user->employee_number,
             'received_at' => now(),
             'movement_status' => 'received',
         ]);
 
         $movement->file->update([
             'status' => 'received',
-            'current_holder' => auth()->user()->employee_number,
+            'current_holder' => $user->employee_number,
         ]);
 
         \App\Models\AuditLog::create([
-            'employee_number' => auth()->user()->employee_number,
+            'employee_number' => $user->employee_number,
             'action' => 'file_received',
             'description' => 'Received file '.$movement->file->new_file_no.' from '.$movement->sender_emp_no,
             'ip_address' => request()->ip(),
@@ -114,6 +127,9 @@ class DepartmentDashboard extends Component
         ]);
 
         $this->toastSuccess('File Received', 'File "'.$movement->file->new_file_no.'" has been received successfully.');
+
+        // Dispatch event to refresh navigation pending count
+        $this->dispatch('receipt-confirmed');
     }
 
     public function render()
@@ -122,6 +138,7 @@ class DepartmentDashboard extends Component
 
         $myFiles = File::query()
             ->where('current_holder', $user->employee_number)
+            ->where('status', '!=', 'merged')
             ->when($this->search, function ($query) {
                 $query->where(function ($q) {
                     $q->where('subject', 'like', '%'.$this->search.'%')
@@ -132,7 +149,7 @@ class DepartmentDashboard extends Component
             ->when($this->statusFilter, function ($query) {
                 $query->where('status', $this->statusFilter);
             })
-            ->with(['currentHolder', 'latestMovement'])
+            ->with(['currentHolder.departmentRel', 'currentHolder.unitRel.department', 'latestMovement'])
             ->orderBy('created_at', 'desc')
             ->paginate($this->perPage);
 
@@ -141,6 +158,7 @@ class DepartmentDashboard extends Component
 
         if ($this->showAllFilesModal) {
             $allFiles = File::query()
+                ->where('status', '!=', 'merged')
                 ->when($this->allFilesSearch, function ($query) {
                     $query->where(function ($q) {
                         $q->where('subject', 'like', '%'.$this->allFilesSearch.'%')
@@ -156,14 +174,14 @@ class DepartmentDashboard extends Component
                 })
                 ->when($this->allFilesDepartment, function ($query) {
                     $query->where(function ($q) {
-                        $q->whereHas('currentHolder.department', function ($q2) {
+                        $q->whereHas('currentHolder.departmentRel', function ($q2) {
                             $q2->where('name', $this->allFilesDepartment);
-                        })->orWhereHas('currentHolder.unit.department', function ($q2) {
+                        })->orWhereHas('currentHolder.unitRel.department', function ($q2) {
                             $q2->where('name', $this->allFilesDepartment);
                         });
                     });
                 })
-                ->with(['currentHolder.department', 'currentHolder.unit', 'registeredBy'])
+                ->with(['currentHolder.departmentRel', 'currentHolder.unitRel.department', 'registeredBy'])
                 ->orderBy('created_at', 'desc')
                 ->paginate($this->allFilesPerPage, ['*'], 'allFilesPage');
 
@@ -172,19 +190,25 @@ class DepartmentDashboard extends Component
 
         $pendingReceipts = FileMovement::where('intended_receiver_emp_no', $user->employee_number)
             ->where('movement_status', 'sent')
-            ->with(['file', 'sender'])
+            ->whereHas('file', function ($q) {
+                $q->where('status', '!=', 'merged');
+            })
+            ->with(['file', 'sender.departmentRel', 'sender.unitRel.department'])
             ->orderBy('sent_at', 'desc')
             ->paginate(5, ['*'], 'pendingPage');
 
         $sentPendingConfirmation = FileMovement::where('sender_emp_no', $user->employee_number)
             ->where('movement_status', 'sent')
-            ->with(['file', 'intendedReceiver'])
+            ->whereHas('file', function ($q) {
+                $q->where('status', '!=', 'merged');
+            })
+            ->with(['file', 'intendedReceiver.departmentRel', 'intendedReceiver.unitRel.department'])
             ->orderBy('sent_at', 'desc')
             ->paginate(5, ['*'], 'sentPendingPage');
 
         $recentlyReceived = FileMovement::where('actual_receiver_emp_no', $user->employee_number)
             ->where('movement_status', 'received')
-            ->with(['file', 'sender'])
+            ->with(['file', 'sender.departmentRel', 'sender.unitRel.department'])
             ->orderBy('received_at', 'desc')
             ->limit(2)
             ->get();

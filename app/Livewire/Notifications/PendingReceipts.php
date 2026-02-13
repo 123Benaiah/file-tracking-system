@@ -10,9 +10,6 @@ class PendingReceipts extends Component
 {
     public $pendingReceipts = [];
     public $showPopup = false;
-    public $selectedMovementId = null;
-    public $receiverComments = '';
-    public $dismissed = false;
 
     protected $listeners = ['refreshPendingReceipts' => 'loadPendingReceipts'];
 
@@ -31,110 +28,73 @@ class PendingReceipts extends Component
 
         $this->pendingReceipts = FileMovement::where('intended_receiver_emp_no', $user->employee_number)
             ->where('movement_status', 'sent')
+            ->whereHas('file', function ($q) {
+                $q->where('status', '!=', 'merged');
+            })
             ->with(['file', 'sender'])
             ->orderBy('sent_at', 'desc')
             ->get();
 
-        // Show popup if there are pending receipts and not dismissed
-        $this->showPopup = $this->pendingReceipts->count() > 0 && !$this->dismissed;
+        $this->showPopup = $this->pendingReceipts->count() > 0 && !session('pending_receipts_dismissed_' . $user->employee_number, false);
     }
 
     public function dismissPopup()
     {
-        $this->dismissed = true;
+        session(['pending_receipts_dismissed_' . Auth::user()->employee_number => true]);
         $this->showPopup = false;
     }
 
     public function showPopupAgain()
     {
-        $this->dismissed = false;
-        $this->showPopup = $this->pendingReceipts->count() > 0;
+        session(['pending_receipts_dismissed_' . Auth::user()->employee_number => false]);
+        $this->loadPendingReceipts();
     }
 
-    public function getSelectedMovementProperty()
+    public function quickConfirm($movementId)
     {
-        if (!$this->selectedMovementId) {
-            return null;
-        }
-
-        return FileMovement::with(['file', 'sender', 'intendedReceiver'])
-            ->find($this->selectedMovementId);
-    }
-
-    public function selectMovement($movementId)
-    {
-        $movement = FileMovement::with(['file', 'sender', 'intendedReceiver'])
-            ->findOrFail($movementId);
-
-        // Verify this user is the intended receiver
-        if ($movement->intended_receiver_emp_no !== auth()->user()->employee_number) {
-            session()->flash('error', 'You are not authorized to receive this file.');
-            return;
-        }
-
-        $this->selectedMovementId = $movementId;
-    }
-
-    public function confirmReceipt()
-    {
-        if (!$this->selectedMovementId) {
-            session()->flash('error', 'No file movement selected.');
-            return;
-        }
-
-        $movement = FileMovement::with('file')->find($this->selectedMovementId);
+        $movement = FileMovement::with('file')->find($movementId);
 
         if (!$movement) {
-            session()->flash('error', 'File movement not found.');
-            $this->closeConfirmation();
+            $this->dispatch('notify', type: 'error', message: 'File movement not found.');
             return;
         }
 
-        // Verify this user is the intended receiver
-        if ($movement->intended_receiver_emp_no !== auth()->user()->employee_number) {
-            session()->flash('error', 'You are not authorized to receive this file.');
-            $this->closeConfirmation();
+        $user = Auth::user();
+        if ($movement->intended_receiver_emp_no !== $user->employee_number) {
+            $this->dispatch('notify', type: 'error', message: 'You are not authorized to receive this file.');
             return;
         }
 
-        // Update the movement
         $movement->update([
-            'actual_receiver_emp_no' => auth()->user()->employee_number,
+            'actual_receiver_emp_no' => $user->employee_number,
             'received_at' => now(),
             'movement_status' => 'received',
-            'receiver_comments' => $this->receiverComments,
         ]);
 
-        // Update the file status and current holder
+        // If receiver is registry staff, file is completed
+        $isReturningToRegistry = $user->isRegistryStaff();
+
         $movement->file->update([
-            'status' => 'received',
-            'current_holder' => auth()->user()->employee_number,
+            'status' => $isReturningToRegistry ? 'completed' : 'received',
+            'current_holder' => $user->employee_number,
         ]);
 
-        // Log the action
         \App\Models\AuditLog::create([
-            'employee_number' => auth()->user()->employee_number,
-            'action' => 'file_received',
-            'description' => 'Received file ' . $movement->file->new_file_no . ' from ' . $movement->sender_emp_no,
+            'employee_number' => $user->employee_number,
+            'action' => $isReturningToRegistry ? 'file_returned_to_registry' : 'file_received',
+            'description' => $isReturningToRegistry
+                ? 'Returned file '.$movement->file->new_file_no.' to registry'
+                : 'Received file '.$movement->file->new_file_no.' from '.$movement->sender_emp_no,
             'ip_address' => request()->ip(),
             'user_agent' => request()->userAgent(),
             'new_data' => $movement->fresh()->toArray(),
         ]);
 
-        session()->flash('success', 'File "' . $movement->file->new_file_no . '" received successfully.');
-
-        // Reset and reload
-        $this->closeConfirmation();
-        $this->loadPendingReceipts();
-
-        // Dispatch event to refresh other components
+        $this->dispatch('notify', type: 'success', message: $isReturningToRegistry
+            ? 'File "'.$movement->file->new_file_no.'" returned to registry and completed.'
+            : 'File "'.$movement->file->new_file_no.'" confirmed successfully.');
         $this->dispatch('fileReceived');
-    }
-
-    public function closeConfirmation()
-    {
-        $this->selectedMovementId = null;
-        $this->receiverComments = '';
+        $this->loadPendingReceipts();
     }
 
     public function render()

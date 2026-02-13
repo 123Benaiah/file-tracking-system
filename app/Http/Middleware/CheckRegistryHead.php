@@ -12,8 +12,19 @@ class CheckRegistryHead
     {
         $user = auth()->user();
 
-        if (!$user || !$user->isRegistryHead()) {
-            abort(403, 'Access denied. Only Registry Head can perform this action.');
+        if (!$user) {
+            abort(403, 'Access denied.');
+        }
+
+        // Admins should use the admin panel
+        if ($user->isAdmin()) {
+            return redirect()->route('admin.dashboard');
+        }
+
+        // Check is_registry_head flag first, then fallback to method
+        if (!$user->is_registry_head && !$user->isRegistryHead()) {
+            return redirect()->route('dashboard')
+                ->with('error', 'Access denied. Only Registry Head can perform this action.');
         }
 
         return $next($request);

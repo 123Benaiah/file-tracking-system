@@ -157,28 +157,3 @@ class DatabaseSeeder extends Seeder
     }
 
 }
-// INSERT INTO employees (
-//     employee_number,
-//     name,
-//     email,
-//     password,
-//     position,
-//     department,
-//     office,
-//     role,
-//     is_active,
-//     created_at,
-//     updated_at
-// ) VALUES (
-//     'EMP001',
-//     'Benaiah Lushomo',
-//     'benaiahlushomo@gmail.com',
-//     SHA2('password123', 256),
-//     'Staff',
-//     'IT',
-//     'Main Office',
-//     'user',
-//     1,
-//     NOW(),
-//     NOW()
-// );

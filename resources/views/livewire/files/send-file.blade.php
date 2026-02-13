@@ -66,6 +66,17 @@
                         </p>
                     </div>
                 </div>
+            @elseif($file->status === 'completed')
+                <div class="px-6 py-3 bg-orange-50 border-b border-orange-100">
+                    <div class="flex items-center space-x-2">
+                        <svg class="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        <p class="text-sm text-orange-700 font-medium">
+                            This completed file is being sent again. A new movement will be created in the history.
+                        </p>
+                    </div>
+                </div>
             @endif
 
             <!-- Form Section -->
@@ -252,7 +263,7 @@
                         <!-- Show all employees grouped by department -->
                         @php
                             $groupedReceivers = $receivers->groupBy(function($employee) {
-                                return $employee->isRegistryStaff() ? 'Registry' : $employee->department;
+                                return $employee->isRegistryStaff() ? 'Registry' : ($employee->departmentRel?->name ?? 'N/A');
                             });
                         @endphp
 
@@ -275,7 +286,7 @@
                                         </div>
                                         <div class="flex-1 text-left">
                                             <p class="text-sm font-medium text-gray-900">{{ $receiver->name }}</p>
-                                            <p class="text-xs text-gray-500">{{ $receiver->position }}</p>
+                                            <p class="text-xs text-gray-500">{{ $receiver->position?->title ?? 'N/A' }}</p>
                                         </div>
                                         <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>

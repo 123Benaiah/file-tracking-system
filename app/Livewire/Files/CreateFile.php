@@ -13,38 +13,23 @@ class CreateFile extends Component
     use WithFileUploads, WithToast;
 
     public $subject;
-
     public $subjectType = 'existing';
-
     public $newSubject = '';
-
     public $file_title;
-
     public $old_file_no = '';
-
     public $new_file_no = '';
-
     public $priority = 'normal';
-
     public $confidentiality = 'public';
-
     public $remarks;
-
     public $due_date;
-
     public $attachments = [];
-
-    public $fileCreationType = 'new'; // 'new' or 'copy'
-
+    public $fileCreationType = 'new';
     public $copyOfFileNo = '';
-
     public $newFileNoExists = false;
-
     public $oldFileNoExists = false;
-
     public $oldFileNoData = null;
-
     public $copyOfFileData = null;
+    public $isSaving = false;
 
     public $existingSubjects = [
         'HEAD OF STATE',
@@ -142,7 +127,7 @@ class CreateFile extends Component
         $this->newFileNoExists = false;
 
         if (! empty($this->new_file_no) && strlen($this->new_file_no) >= 3 && $this->fileCreationType === 'new') {
-            $exists = File::where('new_file_no', $this->new_file_no)->exists();
+            $exists = File::withoutTrashed()->where('new_file_no', $this->new_file_no)->exists();
             $this->newFileNoExists = $exists;
         }
     }
@@ -182,7 +167,8 @@ class CreateFile extends Component
         $today = now()->format('Ymd');
         $prefix = 'FTS-'.$today.'-';
 
-        $lastFile = File::where('new_file_no', 'like', $prefix.'%')
+        $lastFile = File::withoutTrashed()
+            ->where('new_file_no', 'like', $prefix.'%')
             ->orderBy('new_file_no', 'desc')
             ->first();
 
@@ -198,9 +184,11 @@ class CreateFile extends Component
 
     public function save()
     {
+        $this->isSaving = true;
         $this->validate();
 
-        if (File::where('new_file_no', $this->new_file_no)->exists()) {
+        if (File::withoutTrashed()->where('new_file_no', $this->new_file_no)->exists()) {
+            $this->isSaving = false;
             $this->toastError('Duplicate File Number', 'This file number already exists in the system.');
 
             return;
@@ -271,6 +259,7 @@ class CreateFile extends Component
             return redirect()->route('registry.dashboard');
 
         } catch (\Exception $e) {
+            $this->isSaving = false;
             $this->toastError('Operation Failed', 'Error: '.$e->getMessage());
         }
     }

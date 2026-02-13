@@ -1,24 +1,11 @@
 <!-- Toast Notifications Container -->
 <div x-data="toastNotifications()"
-     x-on:toast.window="addToast($event.detail)"
+     x-on:toast.window="addToast(Array.isArray($event.detail) ? $event.detail[0] : $event.detail)"
      x-init="
         // Check for session flash toast on page load
         @if(session('toast'))
             addToast(@json(session('toast')));
         @endif
-     "
-     x-on:livewire:initialized.window="
-        Livewire.hook('commit', ({ component, commit, respond, succeed, fail }) => {
-            succeed(({ snapshot, effect }) => {
-                if (effect.dispatches) {
-                    effect.dispatches.forEach(dispatch => {
-                        if (dispatch.name === 'toast') {
-                            addToast(dispatch.params[0]);
-                        }
-                    });
-                }
-            });
-        });
      "
      class="fixed z-[100] pointer-events-none top-4 inset-x-0"
      style="perspective: 1000px;">
@@ -144,6 +131,17 @@ function toastNotifications() {
         maxToasts: 5,
 
         addToast(options) {
+            // Handle if options is an array (Livewire 3 dispatch format)
+            if (Array.isArray(options)) {
+                options = options[0] || {};
+            }
+
+            // Handle if options is not an object
+            if (typeof options !== 'object' || options === null) {
+                console.warn('Toast: Invalid options received', options);
+                options = {};
+            }
+
             const id = Date.now() + Math.random();
             const duration = options.duration || 6000;
 

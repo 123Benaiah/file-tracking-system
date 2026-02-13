@@ -23,7 +23,8 @@ return new class extends Migration
                 'action_required',
                 'completed',
                 'returned_to_registry',
-                'archived'
+                'archived',
+                'merged'
             ])->default('at_registry');
             $table->enum('confidentiality', ['public', 'confidential', 'secret'])->default('public');
             $table->text('remarks')->nullable();

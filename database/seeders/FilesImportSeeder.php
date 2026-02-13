@@ -23,7 +23,17 @@ class FilesImportSeeder extends Seeder
         $lines = explode("\n", $content);
 
         // Get registry head as the one who registered all files
-        $registryHead = Employee::where('role', 'registry_head')->first();
+        // Registry Head is identified by department (HRA), unit (Registry), and position (Registry Head)
+        $registryHead = Employee::whereHas('unitRel', function ($query) {
+                $query->where('name', 'Registry');
+            })
+            ->whereHas('departmentRel', function ($query) {
+                $query->where('code', 'HRA')->orWhere('name', 'Human Resources and Administration');
+            })
+            ->whereHas('position', function ($query) {
+                $query->where('title', 'like', '%Registry Head%');
+            })
+            ->first();
 
         if (!$registryHead) {
             $this->command->error("No registry head found! Please run DatabaseSeeder first.");

@@ -36,11 +36,19 @@ class SendFile extends Component
 
     public function mount(File $file)
     {
-        $this->file = $file;
+        $user = auth()->user();
 
-        if (! $this->file->canBeSentBy(auth()->user())) {
-            abort(403, 'You cannot send this file.');
+        // Check if user can send this file
+        if (!$file->canBeSentBy($user)) {
+            abort(403, 'You are not authorized to send this file.');
         }
+
+        // Additional check: only HRA registry staff can resend completed files
+        if ($file->status === 'completed' && !$user->canResendFiles()) {
+            abort(403, 'Only HRA registry staff can resend completed files.');
+        }
+
+        $this->file = $file;
     }
 
     public function openRecipientModal()
@@ -67,11 +75,15 @@ class SendFile extends Component
                 'employee_number' => $receiver->employee_number,
                 'name' => $receiver->name,
                 'position' => $receiver->position?->title,
-                'department' => $receiver->department?->name,
-                'unit' => $receiver->unit?->name,
+                'department' => $receiver->departmentRel?->name ?? $receiver->department,
+                'unit' => $receiver->unitRel?->name ?? $receiver->unit,
                 'is_registry' => $receiver->isRegistryStaff(),
             ];
-            $this->isReturningToRegistry = $receiver->isRegistryStaff() && ! auth()->user()->isRegistryStaff();
+            $sender = auth()->user();
+            $this->isReturningToRegistry = $receiver->isRegistryStaff() && (!$sender || !$sender->isRegistryStaff());
+        } else {
+            $this->selectedRecipient = null;
+            $this->isReturningToRegistry = false;
         }
 
         $this->showRecipientModal = false;
@@ -88,7 +100,8 @@ class SendFile extends Component
     {
         if ($value) {
             $receiver = Employee::find($value);
-            $this->isReturningToRegistry = $receiver && $receiver->isRegistryStaff();
+            $sender = auth()->user();
+            $this->isReturningToRegistry = $receiver && $receiver->isRegistryStaff() && (!$sender || !$sender->isRegistryStaff());
         } else {
             $this->isReturningToRegistry = false;
         }
@@ -107,6 +120,9 @@ class SendFile extends Component
         $sender = auth()->user();
 
         $isReturningToRegistry = $receiver->isRegistryStaff() && ! $sender->isRegistryStaff();
+        
+        // Check if sending a completed file back out - only HRA registry staff can resend
+        $isReSendingCompletedFile = $this->file->status === 'completed' && $sender->canResendFiles() && ! $isReturningToRegistry;
 
         $movement = FileMovement::create([
             'file_id' => $this->file->id,
@@ -121,7 +137,10 @@ class SendFile extends Component
         ]);
 
         if ($isReturningToRegistry) {
-            $newStatus = 'Completed';
+            $newStatus = 'completed';
+        } elseif ($isReSendingCompletedFile) {
+            // Completed file being sent out again - becomes in transit
+            $newStatus = 'in_transit';
         } else {
             $newStatus = 'in_transit';
         }
@@ -148,11 +167,7 @@ class SendFile extends Component
                 : 'File '.$this->file->new_file_no.' has been sent to '.$receiver->name.'.'
         );
 
-        if ($sender->isRegistryStaff()) {
-            return redirect()->route('registry.dashboard');
-        } else {
-            return redirect()->route('department.dashboard');
-        }
+        return redirect()->route('dashboard');
     }
 
     public function render()

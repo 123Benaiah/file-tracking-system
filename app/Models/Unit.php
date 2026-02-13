@@ -16,6 +16,11 @@ class Unit extends Model
         'description',
         'department_id',
         'location',
+        'is_registry_unit',
+    ];
+
+    protected $casts = [
+        'is_registry_unit' => 'boolean',
     ];
 
     // Relationships

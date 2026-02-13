@@ -29,7 +29,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'guest' => \Illuminate\Auth\Middleware\RedirectIfAuthenticated::class,
             'password.confirm' => \Illuminate\Auth\Middleware\RequirePassword::class,
             'precognitive' => \Illuminate\Foundation\Http\Middleware\HandlePrecognitiveRequests::class,
-            'signed' =>Illuminate\Routing\Middleware\ValidateSignature::class,
+            'signed' => Illuminate\Routing\Middleware\ValidateSignature::class,
             'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
             'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
 
@@ -37,6 +37,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'registry.head' => \App\Http\Middleware\CheckRegistryHead::class,
             'registry.staff' => \App\Http\Middleware\CheckRegistryStaff::class,
             'department.access' => \App\Http\Middleware\CheckDepartmentAccess::class,
+            'admin' => \App\Http\Middleware\Admin::class,
+            'non.admin' => \App\Http\Middleware\NonAdmin::class,
         ]);
 
     })

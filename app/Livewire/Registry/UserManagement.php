@@ -33,6 +33,8 @@ class UserManagement extends Component
 
     public $selectAll = false;
 
+    public $isDeleting = false;
+
     public function getSelectedCountProperty()
     {
         return count($this->selectedEmployees);
@@ -83,7 +85,7 @@ class UserManagement extends Component
             'department_id' => 'required|exists:departments,id',
             'unit_id' => 'nullable|exists:units,id',
             'office' => 'nullable|string|max:255',
-            'role' => 'required|in:registry_head,registry_clerk,department_head,user',
+            'role' => 'required|in:user',
             'is_active' => 'boolean',
             'employment_type' => 'required|in:permanent,contract,temporary,intern',
         ];
@@ -228,13 +230,17 @@ class UserManagement extends Component
 
     public function deleteSelected()
     {
+        $this->isDeleting = true;
+        
         $count = Employee::whereIn('employee_number', $this->selectedEmployees)->count();
         Employee::whereIn('employee_number', $this->selectedEmployees)->delete();
 
-        $this->toastSuccess('Employees Deleted', "$count employee(s) have been deleted successfully.");
+        $this->isDeleting = false;
         $this->showDeleteModal = false;
         $this->selectedEmployees = [];
         $this->selectAll = false;
+        
+        $this->toastSuccess('Employees Deleted', "$count employee(s) have been deleted successfully.");
     }
 
     public function updatedDepartmentId()
