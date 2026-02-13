@@ -594,5 +594,5 @@ For support, please contact:
 ---
 
 <p align="center">
-  <strong>Built with ❤️ for the Ministry of Home Affairs</strong>
+  <strong>Built with ❤️ for the Ministry of Home Affairs and Internal Security</strong>
 </p>
