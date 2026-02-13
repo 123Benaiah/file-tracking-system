@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-  <strong>A Comprehensive Web-Based File Tracking Solution for Government Organizations</strong>
+  <strong>A Comprehensive Web-Based File Tracking Solution for Ministry of Home Affairs and Internal Security</strong>
 </p>
 
 <p align="center">
@@ -594,5 +594,5 @@ For support, please contact:
 ---
 
 <p align="center">
-  <strong>Built with ❤️ for the Ministry of Home Affairs</strong>
+  <strong>Built with ❤️ for the Ministry of Home Affairs and Internal Security</strong>
 </p>
