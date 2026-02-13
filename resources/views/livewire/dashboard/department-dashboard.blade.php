@@ -1,4 +1,4 @@
-<div wire:poll.10s>
+<div wire:poll.2s.visible x-data="{ showRecentlyReceived: false }">
     <div class="py-4 sm:py-8">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <!-- Header Card - White Theme -->
@@ -107,19 +107,19 @@
                     </div>
                 </a>
 
-                <button wire:click="openAllFilesModal" class="bg-white rounded-xl shadow-md p-4 sm:p-6 hover:shadow-lg transition-all duration-300 text-left w-full group">
+                <a href="{{ route('files.confirm') }}" wire:navigate class="bg-white rounded-xl shadow-md p-4 sm:p-6 hover:shadow-lg transition-all duration-300 group">
                     <div class="flex items-center">
-                        <div class="p-2 sm:p-3 rounded-xl bg-gradient-to-br from-green-500 to-green-600 shadow-lg shadow-green-500/20 group-hover:scale-110 transition-transform">
+                        <div class="p-2 sm:p-3 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 shadow-lg shadow-blue-500/20 group-hover:scale-110 transition-transform">
                             <svg class="w-5 h-5 sm:w-6 sm:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                             </svg>
                         </div>
                         <div class="ml-3 sm:ml-4">
-                            <h3 class="text-base sm:text-lg font-semibold text-gray-900 group-hover:text-green-600 transition-colors">All Files</h3>
-                            <p class="text-xs sm:text-sm text-gray-500"><span class="hidden sm:inline">View all </span>{{ $stats['all_files'] }} <span class="hidden sm:inline">department</span> files</p>
+                            <h3 class="text-base sm:text-lg font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">Confirm Files</h3>
+                            <p class="text-xs sm:text-sm text-gray-500 hidden sm:block">Confirm outgoing file transfers</p>
                         </div>
                     </div>
-                </button>
+                </a>
             </div>
 
             <!-- Recent Pending Receipts -->
@@ -241,18 +241,18 @@
             <!-- Recently Received Section -->
             @if(isset($recentlyReceived) && $recentlyReceived->count() > 0)
             <div class="bg-white rounded-xl shadow-md mb-4 sm:mb-6 overflow-hidden">
-                <div class="px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-100 flex items-center justify-between cursor-pointer" wire:click="toggleRecentlyReceived">
+                <div class="px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-100 flex items-center justify-between cursor-pointer" @click="showRecentlyReceived = !showRecentlyReceived">
                     <div class="flex items-center">
                         <svg class="w-5 h-5 mr-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                         </svg>
                         <h3 class="text-base sm:text-lg font-semibold text-gray-800">Recently Received</h3>
                     </div>
-                    <svg class="w-5 h-5 text-gray-400 transform transition-transform {{ $showRecentlyReceived ? 'rotate-180' : '' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="w-5 h-5 text-gray-400 transform transition-transform" :class="showRecentlyReceived ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                     </svg>
                 </div>
-                <div class="divide-y divide-gray-100 {{ $showRecentlyReceived ? '' : 'hidden' }}">
+                <div class="divide-y divide-gray-100" x-show="showRecentlyReceived" x-cloak x-transition>
                     @foreach($recentlyReceived as $movement)
                     <div class="px-4 sm:px-6 py-3 sm:py-4 hover:bg-gray-50 transition-colors">
                         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
@@ -301,20 +301,20 @@
                         </svg>
                         <h3 class="text-base sm:text-lg font-semibold text-gray-800">My Current Files</h3>
                     </div>
-                    <div class="flex w-full sm:w-auto gap-2">
+                    <div class="grid grid-cols-1 sm:flex sm:flex-row w-full sm:w-auto gap-2">
                         <select wire:model.live="statusFilter" id="statusFilter"
-                                class="bg-white border-gray-300 rounded-lg focus:border-orange-500 focus:ring-orange-500 text-sm">
+                                class="w-full sm:w-auto bg-white border-gray-300 rounded-lg focus:border-orange-500 focus:ring-orange-500 text-sm">
                             <option value="">All Status</option>
                             <option value="at_registry">At Registry</option>
                             <option value="in_transit">In Transit</option>
                             <option value="received">Received</option>
                             <option value="completed">Completed</option>
                         </select>
-                        <div class="flex flex-1">
+                        <div class="flex w-full sm:w-auto">
                             <input type="text" wire:model.live="search" id="myFilesSearch" placeholder="Search files..."
-                                   class="flex-1 sm:flex-none sm:w-40 border-gray-300 rounded-l-lg focus:border-orange-500 focus:ring-orange-500 text-sm">
+                                   class="flex-1 min-w-0 sm:w-40 border-gray-300 rounded-l-lg focus:border-orange-500 focus:ring-orange-500 text-sm">
                             <button wire:click="$refresh"
-                                    class="px-3 py-2 bg-gradient-to-r from-orange-500 to-amber-500 text-white rounded-r-lg hover:from-orange-600 hover:to-amber-600 transition-all text-sm font-medium">
+                                    class="flex-shrink-0 px-3 py-2 bg-gradient-to-r from-orange-500 to-amber-500 text-white rounded-r-lg hover:from-orange-600 hover:to-amber-600 transition-all text-sm font-medium">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                                 </svg>
@@ -375,19 +375,23 @@
                 </div>
 
                 <!-- Pagination and Per Page -->
-                <div class="px-4 sm:px-6 py-4 bg-gray-50 border-t border-gray-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                    <div class="text-xs sm:text-sm text-gray-600">
-                        Showing {{ $myFiles->firstItem() ?? 0 }} to {{ $myFiles->lastItem() ?? 0 }} of {{ $myFiles->total() }} files
+                <div class="px-4 sm:px-6 py-4 bg-gray-50 border-t border-gray-100">
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                        <div class="flex items-center gap-2">
+                            <label for="perPage" class="text-xs sm:text-sm text-gray-600">Per page:</label>
+                            <select wire:model.live="perPage" id="perPage"
+                                    class="bg-white border-gray-300 text-gray-900 rounded-lg shadow-sm focus:border-orange-500 focus:ring-orange-500 text-xs sm:text-sm py-1">
+                                <option value="5">5</option>
+                                <option value="10">10</option>
+                                <option value="20">20</option>
+                            </select>
+                        </div>
                     </div>
-                    <div class="flex items-center gap-2">
-                        <label for="perPage" class="text-xs sm:text-sm text-gray-600">Per page:</label>
-                        <select wire:model.live="perPage" id="perPage"
-                                class="bg-white border-gray-300 text-gray-900 rounded-lg shadow-sm focus:border-orange-500 focus:ring-orange-500 text-xs sm:text-sm py-1">
-                            <option value="5">5</option>
-                            <option value="10">10</option>
-                            <option value="20">20</option>
-                        </select>
+                    @if($myFiles->hasPages())
+                    <div class="mt-3">
+                        {{ $myFiles->links() }}
                     </div>
+                    @endif
                 </div>
 
                 <!-- Mobile Cards -->

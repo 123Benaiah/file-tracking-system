@@ -1,4 +1,4 @@
-<div class="py-4 sm:py-8">
+<div class="py-4 sm:py-8" x-data="{ showFilters: false, showRecentlyReceived: false, showSentPending: false }">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <!-- Stats Cards -->
         <div class="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
@@ -127,17 +127,17 @@
         <!-- Recently Received Section -->
         @if(isset($recentlyReceived) && $recentlyReceived->count() > 0)
         <div class="bg-white rounded-xl shadow-md mb-4 sm:mb-6 overflow-hidden">
-            <div class="px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-100 flex items-center cursor-pointer hover:bg-gray-50 transition-colors" wire:click="toggleRecentlyReceived">
+            <div class="px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-100 flex items-center cursor-pointer hover:bg-gray-50 transition-colors" @click="showRecentlyReceived = !showRecentlyReceived">
                 <svg class="w-5 h-5 mr-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                 </svg>
                 <h3 class="text-base sm:text-lg font-semibold text-gray-800 flex-1">Recently Received</h3>
                 <span class="mr-2 text-xs text-gray-500">{{ $recentlyReceived->count() }} files</span>
-                <svg class="w-5 h-5 text-gray-400 transform transition-transform {{ $showRecentlyReceived ? 'rotate-180' : '' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="w-5 h-5 text-gray-400 transform transition-transform" :class="showRecentlyReceived ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                 </svg>
             </div>
-            <div class="divide-y divide-gray-100 {{ $showRecentlyReceived ? '' : 'hidden' }}">
+            <div class="divide-y divide-gray-100" x-show="showRecentlyReceived" x-cloak x-transition>
                 @foreach($recentlyReceived as $movement)
                 <div class="px-4 sm:px-6 py-3 sm:py-4 hover:bg-gray-50 transition-colors">
                     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
@@ -179,17 +179,17 @@
         <!-- Sent Files Pending Confirmation -->
         @if($sentPendingConfirmation->count() > 0)
         <div class="bg-white rounded-xl shadow-md mb-4 sm:mb-6 overflow-hidden">
-            <div class="px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-100 flex items-center cursor-pointer hover:bg-gray-50 transition-colors" wire:click="toggleSentPending">
+            <div class="px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-100 flex items-center cursor-pointer hover:bg-gray-50 transition-colors" @click="showSentPending = !showSentPending">
                 <svg class="w-5 h-5 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
                 </svg>
                 <h3 class="text-base sm:text-lg font-semibold text-gray-800 flex-1">Sent - Pending Confirmation</h3>
                 <span class="mr-2 text-xs text-gray-500">{{ $sentPendingConfirmation->count() }} files</span>
-                <svg class="w-5 h-5 text-gray-400 transform transition-transform {{ $showSentPending ? 'rotate-180' : '' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="w-5 h-5 text-gray-400 transform transition-transform" :class="showSentPending ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                 </svg>
             </div>
-            <div class="divide-y divide-gray-100 {{ $showSentPending ? '' : 'hidden' }}">
+            <div class="divide-y divide-gray-100" x-show="showSentPending" x-cloak x-transition>
                 @foreach($sentPendingConfirmation as $movement)
                 <div class="px-4 sm:px-6 py-3 sm:py-4 hover:bg-gray-50 transition-colors">
                     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
@@ -227,7 +227,7 @@
                 </div>
                 @endforeach
             </div>
-            <div class="px-4 sm:px-6 py-3 bg-gray-50 border-t border-gray-100 {{ $showSentPending ? '' : 'hidden' }}">
+            <div class="px-4 sm:px-6 py-3 bg-gray-50 border-t border-gray-100" x-show="showSentPending" x-cloak x-transition>
                 <p class="text-xs text-gray-500">
                     These files are still in your possession until the recipient confirms receipt.
                 </p>
@@ -237,19 +237,19 @@
 
         <!-- Filters Section -->
         <div class="bg-white rounded-xl shadow-md mb-6">
-            <div class="px-4 sm:px-5 py-3 sm:py-4 border-b border-gray-100 flex justify-between items-center cursor-pointer hover:bg-gray-50 transition-colors" wire:click="toggleFilters">
+            <div class="px-4 sm:px-5 py-3 sm:py-4 border-b border-gray-100 flex justify-between items-center cursor-pointer hover:bg-gray-50 transition-colors" @click="showFilters = !showFilters">
                 <h3 class="text-base sm:text-lg font-semibold text-gray-800 flex items-center">
                     <svg class="w-4 h-4 sm:w-5 sm:h-5 mr-2 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path>
                     </svg>
                     Filters
                 </h3>
-                <svg class="w-5 h-5 text-gray-400 transform transition-transform {{ $showFilters ? 'rotate-180' : '' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="w-5 h-5 text-gray-400 transform transition-transform" :class="showFilters ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                 </svg>
             </div>
 
-            <div class="p-4 sm:p-5 {{ $showFilters ? '' : 'hidden' }}">
+            <div class="p-4 sm:p-5" x-show="showFilters" x-cloak x-transition>
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                     <div>
                         <label for="search" class="block text-sm font-medium text-gray-700 mb-1">Search</label>

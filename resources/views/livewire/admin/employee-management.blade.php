@@ -183,13 +183,37 @@
             <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
                 <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" wire:click="closeModal"></div>
                 <span class="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
-                <div class="inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                <div class="inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full" x-data="{ activeTab: 'details' }">
                     <form wire:submit.prevent="save">
                         <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                             <h3 class="text-lg font-semibold text-gray-900 mb-4" id="modal-title">
                                 {{ $editMode ? 'Edit Employee' : 'Add New Employee' }}
                             </h3>
-                            <div class="space-y-4">
+
+                            <!-- Tabs -->
+                            <div class="border-b border-gray-200 mb-4">
+                                <nav class="flex -mb-px gap-4">
+                                    <button type="button" @click="activeTab = 'details'"
+                                            :class="activeTab === 'details' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+                                            class="pb-3 px-1 border-b-2 font-medium text-sm transition-colors flex items-center gap-1.5">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                                        </svg>
+                                        Details
+                                    </button>
+                                    <button type="button" @click="activeTab = 'security'"
+                                            :class="activeTab === 'security' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+                                            class="pb-3 px-1 border-b-2 font-medium text-sm transition-colors flex items-center gap-1.5">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                                        </svg>
+                                        Security
+                                    </button>
+                                </nav>
+                            </div>
+
+                            <!-- Details Tab -->
+                            <div x-show="activeTab === 'details'" class="space-y-4">
                                 <div class="grid grid-cols-2 gap-4">
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-1">Employee ID *</label>
@@ -218,19 +242,6 @@
                                             <option value="admin" @selected($role === 'admin')>Administrator</option>
                                         </select>
                                         @error('role') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
-                                    </div>
-                                </div>
-                                <div class="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-1">{{ $editMode ? 'New Password (leave blank to keep)' : 'Password *' }}</label>
-                                        <input type="password" wire:model="password"
-                                               class="w-full border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                                        @error('password') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
-                                    </div>
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-1">Confirm Password</label>
-                                        <input type="password" wire:model="password_confirmation"
-                                               class="w-full border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-500">
                                     </div>
                                 </div>
                                 <div class="grid grid-cols-2 gap-4">
@@ -310,6 +321,33 @@
 
                                         <p class="text-xs text-gray-500 ml-6">Registry staff status is automatically determined by the employee's department/unit assignment.</p>
                                     </div>
+                                </div>
+                            </div>
+
+                            <!-- Security Tab -->
+                            <div x-show="activeTab === 'security'" x-cloak class="space-y-4">
+                                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-2">
+                                    <div class="flex items-start gap-3">
+                                        <svg class="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                        </svg>
+                                        <div>
+                                            <p class="text-sm font-medium text-blue-800">Password Policy</p>
+                                            <p class="text-xs text-blue-600 mt-1">{{ $editMode ? 'Leave password fields blank to keep the current password. Only fill in if you want to change it.' : 'Password must be at least 8 characters long.' }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">{{ $editMode ? 'New Password' : 'Password *' }}</label>
+                                    <input type="password" wire:model="password" placeholder="{{ $editMode ? 'Enter new password' : 'Enter password' }}"
+                                           class="w-full border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                    @error('password') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Confirm Password</label>
+                                    <input type="password" wire:model="password_confirmation" placeholder="Confirm password"
+                                           class="w-full border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-500">
                                 </div>
                             </div>
                         </div>

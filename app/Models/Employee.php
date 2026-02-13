@@ -73,17 +73,20 @@ class Employee extends Authenticatable
 
     public function getEffectiveDepartment()
     {
-        if ($this->unit_id && $this->relationLoaded('unitRel')) {
+        if ($this->unit_id) {
+            if (!$this->relationLoaded('unitRel')) {
+                $this->load('unitRel.department');
+            }
             return $this->unitRel?->department;
         }
-        
+
         if ($this->department_id) {
-            if ($this->relationLoaded('departmentRel')) {
-                return $this->departmentRel;
+            if (!$this->relationLoaded('departmentRel')) {
+                $this->load('departmentRel');
             }
-            return Department::find($this->department_id);
+            return $this->departmentRel;
         }
-        
+
         return null;
     }
 
@@ -124,7 +127,10 @@ class Employee extends Authenticatable
         if (!$this->position_id) {
             return false;
         }
-        return Position::where('id', $this->position_id)->value('is_management') ?? false;
+        if (!$this->relationLoaded('position')) {
+            $this->load('position');
+        }
+        return $this->position?->is_management ?? false;
     }
 
     public function organizationalUnit()
@@ -207,7 +213,10 @@ class Employee extends Authenticatable
     public function getUnitAttribute()
     {
         if ($this->unit_id) {
-            return Unit::where('id', $this->unit_id)->value('name');
+            if (!$this->relationLoaded('unitRel')) {
+                $this->load('unitRel');
+            }
+            return $this->unitRel?->name;
         }
         return null;
     }
@@ -215,7 +224,10 @@ class Employee extends Authenticatable
     public function getPositionTitleAttribute()
     {
         if ($this->position_id) {
-            return Position::where('id', $this->position_id)->value('title');
+            if (!$this->relationLoaded('position')) {
+                $this->load('position');
+            }
+            return $this->position?->title;
         }
         return null;
     }

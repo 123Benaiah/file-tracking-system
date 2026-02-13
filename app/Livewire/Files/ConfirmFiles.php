@@ -94,12 +94,7 @@ class ConfirmFiles extends Component
             ->paginate($this->perPage);
 
         $stats = [
-            'pending_count' => FileMovement::where('intended_receiver_emp_no', $user->employee_number)
-                ->where('movement_status', 'sent')
-                ->whereHas('file', function ($q) {
-                    $q->where('status', '!=', 'merged');
-                })
-                ->count(),
+            'pending_count' => $pendingReceipts->total(),
         ];
 
         return view('livewire.files.confirm-files', [

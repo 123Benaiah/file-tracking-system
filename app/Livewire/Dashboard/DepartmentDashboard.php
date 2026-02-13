@@ -31,18 +31,6 @@ class DepartmentDashboard extends Component
 
     public $allFilesPerPage = 10;
 
-    public $showRecentlyReceived = false;
-
-    public function mount()
-    {
-        $this->showRecentlyReceived = false;
-    }
-
-    public function toggleRecentlyReceived()
-    {
-        $this->showRecentlyReceived = ! $this->showRecentlyReceived;
-    }
-
     protected $queryString = [
         'search' => ['except' => ''],
         'statusFilter' => ['except' => ''],
@@ -156,9 +144,21 @@ class DepartmentDashboard extends Component
         $allFiles = collect();
         $departments = [];
 
+        // Get current user's department ID
+        $userDepartmentId = $user->department_id ?? ($user->unit?->department_id ?? null);
+
         if ($this->showAllFilesModal) {
             $allFiles = File::query()
                 ->where('status', '!=', 'merged')
+                ->where(function ($query) use ($userDepartmentId) {
+                    // Filter files where current holder is in the user's department
+                    $query->whereHas('currentHolder', function ($q) use ($userDepartmentId) {
+                        $q->where('department_id', $userDepartmentId)
+                          ->orWhereHas('unitRel', function ($q2) use ($userDepartmentId) {
+                              $q2->where('department_id', $userDepartmentId);
+                          });
+                    });
+                })
                 ->when($this->allFilesSearch, function ($query) {
                     $query->where(function ($q) {
                         $q->where('subject', 'like', '%'.$this->allFilesSearch.'%')
@@ -171,15 +171,6 @@ class DepartmentDashboard extends Component
                 })
                 ->when($this->allFilesPriority, function ($query) {
                     $query->where('priority', $this->allFilesPriority);
-                })
-                ->when($this->allFilesDepartment, function ($query) {
-                    $query->where(function ($q) {
-                        $q->whereHas('currentHolder.departmentRel', function ($q2) {
-                            $q2->where('name', $this->allFilesDepartment);
-                        })->orWhereHas('currentHolder.unitRel.department', function ($q2) {
-                            $q2->where('name', $this->allFilesDepartment);
-                        });
-                    });
                 })
                 ->with(['currentHolder.departmentRel', 'currentHolder.unitRel.department', 'registeredBy'])
                 ->orderBy('created_at', 'desc')
@@ -213,15 +204,21 @@ class DepartmentDashboard extends Component
             ->limit(2)
             ->get();
 
+        // Get current user's department ID for stats
+        $userDepartmentId = $user->department_id ?? ($user->unit?->department_id ?? null);
+
         $stats = [
-            'my_files' => File::where('current_holder', $user->employee_number)->count(),
-            'pending_receipts' => FileMovement::where('intended_receiver_emp_no', $user->employee_number)
-                ->where('movement_status', 'sent')
-                ->count(),
-            'sent_pending' => FileMovement::where('sender_emp_no', $user->employee_number)
-                ->where('movement_status', 'sent')
-                ->count(),
-            'all_files' => File::count(),
+            'my_files' => $myFiles->total(),
+            'pending_receipts' => $pendingReceipts->total(),
+            'sent_pending' => $sentPendingConfirmation->total(),
+            'all_files' => File::where('status', '!=', 'merged')->count(),
+            'department_files' => $userDepartmentId ? File::where('status', '!=', 'merged')
+                ->whereHas('currentHolder', function ($q) use ($userDepartmentId) {
+                    $q->where('department_id', $userDepartmentId)
+                      ->orWhereHas('unitRel', function ($q2) use ($userDepartmentId) {
+                          $q2->where('department_id', $userDepartmentId);
+                      });
+                })->count() : 0,
         ];
 
         return view('livewire.dashboard.department-dashboard', [

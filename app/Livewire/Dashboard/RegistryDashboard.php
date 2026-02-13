@@ -2,7 +2,7 @@
 
 namespace App\Livewire\Dashboard;
 
-use App\Models\Employee;
+use App\Models\Department;
 use App\Models\File;
 use App\Models\FileMovement;
 use App\Traits\WithToast;
@@ -24,12 +24,6 @@ class RegistryDashboard extends Component
     public $dateFrom = '';
 
     public $dateTo = '';
-
-    public $showFilters = false;
-
-    public $showRecentlyReceived = false;
-
-    public $showSentPending = false;
 
     public $selectedFiles = [];
 
@@ -85,21 +79,6 @@ class RegistryDashboard extends Component
     public function updatedPerPage()
     {
         $this->resetPage();
-    }
-
-    public function toggleFilters()
-    {
-        $this->showFilters = ! $this->showFilters;
-    }
-
-    public function toggleRecentlyReceived()
-    {
-        $this->showRecentlyReceived = ! $this->showRecentlyReceived;
-    }
-
-    public function toggleSentPending()
-    {
-        $this->showSentPending = ! $this->showSentPending;
     }
 
     public function updatedSelectAll($value)
@@ -282,34 +261,23 @@ class RegistryDashboard extends Component
             ->orderBy('sent_at', 'desc')
             ->paginate(5, ['*'], 'sentPendingPage');
 
+        // Combine file status counts into a single query
+        $statusCounts = File::query()
+            ->selectRaw("count(*) as total")
+            ->selectRaw("sum(case when status = 'at_registry' then 1 else 0 end) as at_registry")
+            ->selectRaw("sum(case when status = 'in_transit' then 1 else 0 end) as in_transit")
+            ->first();
+
         $stats = [
-            'total' => File::count(),
-            'at_registry' => File::where('status', 'at_registry')->count(),
-            'in_transit' => File::where('status', 'in_transit')->count(),
+            'total' => $statusCounts->total,
+            'at_registry' => $statusCounts->at_registry,
+            'in_transit' => $statusCounts->in_transit,
             'overdue' => File::overdue()->count(),
-            'urgent' => File::where('priority', 'urgent')->orWhere('priority', 'very_urgent')->count(),
-            'pending_receipts' => FileMovement::where('intended_receiver_emp_no', $user->employee_number)
-                ->where('movement_status', 'sent')
-                ->count(),
-            'sent_pending' => FileMovement::where('sender_emp_no', $user->employee_number)
-                ->where('movement_status', 'sent')
-                ->count(),
+            'pending_receipts' => $pendingReceipts->total(),
+            'sent_pending' => $sentPendingConfirmation->total(),
         ];
 
-        $departments = Employee::where(function ($query) {
-                $query->whereNotNull('department_id')
-                      ->orWhereHas('unitRel');
-            })
-            ->where('is_active', true)
-            ->get()
-            ->map(function ($employee) {
-                // Get department name from effective department
-                return $employee->department;
-            })
-            ->filter()
-            ->unique()
-            ->sort()
-            ->values();
+        $departments = Department::orderBy('name')->pluck('name');
 
         $recentlyReceived = FileMovement::where('actual_receiver_emp_no', $user->employee_number)
             ->where('movement_status', 'received')

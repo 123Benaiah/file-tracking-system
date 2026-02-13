@@ -40,12 +40,7 @@
                 </main>
             </div>
 
-            <!-- Pending Receipts Notification Popup -->
-            @auth
-                <livewire:notifications.pending-receipts />
-            @endauth
-
-            <!-- Toast Notifications -->
+<!-- Toast Notifications -->
             <x-toast-notifications />
         </div>
     </body>

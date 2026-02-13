@@ -251,7 +251,7 @@ class UserManagement extends Component
     public function render()
     {
         $employees = $this->getQuery()
-            ->with(['position', 'department', 'unit'])
+            ->with(['position', 'departmentRel', 'unitRel'])
             ->orderBy('created_at', 'desc')
             ->paginate($this->perPage);
 

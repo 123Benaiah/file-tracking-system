@@ -8,7 +8,16 @@
       "Bash(findstr:*)",
       "Bash(powershell:*)",
       "Bash(npm run build:*)",
-      "WebFetch(domain:185f-2a09-bac1-7e00-00-2c0-67.ngrok-free.app)"
+      "WebFetch(domain:185f-2a09-bac1-7e00-00-2c0-67.ngrok-free.app)",
+      "Bash(copy \"Logo \\(1\\).png\" \"logo-fts.png\")",
+      "WebFetch(domain:ibb.co)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(npm uninstall:*)",
+      "Bash(git status:*)",
+      "Bash(del \"C:\\\\Users\\\\Benaiah L\\\\OneDrive\\\\Documents\\\\file-tracking-system\\\\resources\\\\views\\\\livewire\\\\notifications\\\\pending-receipts.blade.php\")",
+      "Bash(del \"C:\\\\Users\\\\Benaiah L\\\\OneDrive\\\\Documents\\\\file-tracking-system\\\\app\\\\Livewire\\\\Notifications\\\\PendingReceipts.php\")"
     ]
   }
 }

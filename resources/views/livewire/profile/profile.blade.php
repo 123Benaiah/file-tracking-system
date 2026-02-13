@@ -8,7 +8,7 @@
                     <p class="mt-1 text-sm sm:text-base text-gray-500">Manage your account settings and security preferences</p>
                 </div>
                 <div class="hidden sm:flex items-center">
-                    <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500 to-amber-600 flex items-center justify-center shadow-lg shadow-green-500/20">
+                    <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500 to-amber-600 flex items-center justify-center shadow-lg shadow-orange-500/20">
                         <x-icons.user class="w-6 h-6 text-white" />
                     </div>
                 </div>
@@ -20,7 +20,7 @@
             <div class="lg:col-span-5">
                 <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden lg:sticky lg:top-6">
                     <!-- Profile Header with Gradient -->
-                    <div class="relative px-6 pt-8 pb-16 bg-gradient-to-br from-green-500 via-green-500 to-emerald-500">
+                    <div class="relative px-6 pt-8 pb-16 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
                         <!-- Decorative Pattern -->
                         <div class="absolute inset-0 opacity-10">
                             <svg class="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
@@ -37,12 +37,12 @@
                             <!-- Avatar -->
                             <div class="relative">
                                 <div class="h-24 w-24 sm:h-28 sm:w-28 rounded-full bg-white flex items-center justify-center shadow-2xl ring-4 ring-white/30">
-                                    <span class="text-3xl sm:text-4xl font-bold bg-gradient-to-br from-green-500 to-emerald-600 bg-clip-text text-transparent">
+                                    <span class="text-3xl sm:text-4xl font-bold bg-gradient-to-br from-orange-500 to-amber-600 bg-clip-text text-transparent">
                                         {{ strtoupper(substr($this->name, 0, 2)) }}
                                     </span>
                                 </div>
                                 <!-- Online Indicator -->
-                                <div class="absolute bottom-1 right-1 w-5 h-5 bg-green-500 border-3 border-white rounded-full shadow-lg"></div>
+                                <div class="absolute bottom-1 right-1 w-5 h-5 bg-orange-500 border-3 border-white rounded-full shadow-lg"></div>
                             </div>
 
                             <!-- Name & Role -->
@@ -54,51 +54,67 @@
                         </div>
                     </div>
 
-                    <!-- Profile Details -->
-                    <div class="px-6 py-5 -mt-8 relative">
-                        <div class="bg-white rounded-xl shadow-md border border-gray-100 p-4">
-                            <div class="grid grid-cols-2 gap-x-6 gap-y-4">
-                                <!-- Employee ID -->
-                                <div class="flex items-center gap-3 py-2 border-b border-gray-100 group">
-                                    <div class="w-9 h-9 rounded-lg bg-green-50 flex items-center justify-center group-hover:bg-green-100 transition-colors flex-shrink-0">
-                                        <x-icons.user class="w-5 h-5 text-green-500" />
-                                    </div>
-                                    <div class="min-w-0">
-                                        <p class="text-xs text-gray-500">Employee ID</p>
-                                        <p class="text-sm font-semibold text-gray-900 truncate" title="{{ $this->employee_number }}">{{ $this->employee_number }}</p>
-                                    </div>
+                    <!-- Profile Details Toggle -->
+                    <div class="px-6 py-5 -mt-8 relative" x-data="{ showDetails: false }">
+                        <div class="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden">
+                            <!-- Toggle Button -->
+                            <button @click="showDetails = !showDetails" class="w-full px-4 py-3 flex items-center justify-between hover:bg-gray-50 transition-colors">
+                                <div class="flex items-center gap-2">
+                                    <svg class="w-4 h-4 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                    <span class="text-sm font-semibold text-gray-700">Profile Details</span>
                                 </div>
+                                <svg class="w-5 h-5 text-gray-400 transform transition-transform duration-200" :class="showDetails ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                </svg>
+                            </button>
 
-                                <!-- Department -->
-                                <div class="flex items-center gap-3 py-2 border-b border-gray-100 group">
-                                    <div class="w-9 h-9 rounded-lg bg-blue-50 flex items-center justify-center group-hover:bg-blue-100 transition-colors flex-shrink-0">
-                                        <x-icons.building-office class="w-5 h-5 text-blue-500" />
+                            <!-- Expandable Details -->
+                            <div x-show="showDetails" x-cloak x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 -translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" class="px-4 pb-4 border-t border-gray-100">
+                                <div class="grid grid-cols-2 gap-x-6 gap-y-4 pt-3">
+                                    <!-- Employee ID -->
+                                    <div class="flex items-center gap-3 py-2 border-b border-gray-100 group">
+                                        <div class="w-9 h-9 rounded-lg bg-orange-50 flex items-center justify-center group-hover:bg-orange-100 transition-colors flex-shrink-0">
+                                            <x-icons.user class="w-5 h-5 text-orange-500" />
+                                        </div>
+                                        <div class="min-w-0">
+                                            <p class="text-xs text-gray-500">Employee ID</p>
+                                            <p class="text-sm font-semibold text-gray-900 truncate" title="{{ $this->employee_number }}">{{ $this->employee_number }}</p>
+                                        </div>
                                     </div>
-                                    <div class="min-w-0">
-                                        <p class="text-xs text-gray-500">Department</p>
-                                        <p class="text-sm font-semibold text-gray-900 truncate" title="{{ $this->department }}">{{ $this->department }}</p>
-                                    </div>
-                                </div>
 
-                                <!-- Position -->
-                                <div class="flex items-center gap-3 py-2 border-b border-gray-100 group">
-                                    <div class="w-9 h-9 rounded-lg bg-green-50 flex items-center justify-center group-hover:bg-green-100 transition-colors flex-shrink-0">
-                                        <x-icons.briefcase class="w-5 h-5 text-green-500" />
+                                    <!-- Department -->
+                                    <div class="flex items-center gap-3 py-2 border-b border-gray-100 group">
+                                        <div class="w-9 h-9 rounded-lg bg-blue-50 flex items-center justify-center group-hover:bg-blue-100 transition-colors flex-shrink-0">
+                                            <x-icons.building-office class="w-5 h-5 text-blue-500" />
+                                        </div>
+                                        <div class="min-w-0">
+                                            <p class="text-xs text-gray-500">Department</p>
+                                            <p class="text-sm font-semibold text-gray-900 truncate" title="{{ $this->department }}">{{ $this->department }}</p>
+                                        </div>
                                     </div>
-                                    <div class="min-w-0">
-                                        <p class="text-xs text-gray-500">Position</p>
-                                        <p class="text-sm font-semibold text-gray-900 truncate" title="{{ $this->position }}">{{ $this->position }}</p>
-                                    </div>
-                                </div>
 
-                                <!-- Unit -->
-                                <div class="flex items-center gap-3 py-2 border-b border-gray-100 group">
-                                    <div class="w-9 h-9 rounded-lg bg-purple-50 flex items-center justify-center group-hover:bg-purple-100 transition-colors flex-shrink-0">
-                                        <x-icons.map-pin class="w-5 h-5 text-purple-500" />
+                                    <!-- Position -->
+                                    <div class="flex items-center gap-3 py-2 border-b border-gray-100 group">
+                                        <div class="w-9 h-9 rounded-lg bg-amber-50 flex items-center justify-center group-hover:bg-amber-100 transition-colors flex-shrink-0">
+                                            <x-icons.briefcase class="w-5 h-5 text-amber-500" />
+                                        </div>
+                                        <div class="min-w-0">
+                                            <p class="text-xs text-gray-500">Position</p>
+                                            <p class="text-sm font-semibold text-gray-900 truncate" title="{{ $this->position }}">{{ $this->position }}</p>
+                                        </div>
                                     </div>
-                                    <div class="min-w-0">
-                                        <p class="text-xs text-gray-500">Unit</p>
-                                        <p class="text-sm font-semibold text-gray-900 truncate" title="{{ $this->unit ?? 'N/A' }}">{{ $this->unit ?? 'N/A' }}</p>
+
+                                    <!-- Unit -->
+                                    <div class="flex items-center gap-3 py-2 border-b border-gray-100 group">
+                                        <div class="w-9 h-9 rounded-lg bg-purple-50 flex items-center justify-center group-hover:bg-purple-100 transition-colors flex-shrink-0">
+                                            <x-icons.map-pin class="w-5 h-5 text-purple-500" />
+                                        </div>
+                                        <div class="min-w-0">
+                                            <p class="text-xs text-gray-500">Unit</p>
+                                            <p class="text-sm font-semibold text-gray-900 truncate" title="{{ $this->unit ?? 'N/A' }}">{{ $this->unit ?? 'N/A' }}</p>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -109,11 +125,11 @@
                     <div class="px-6 pb-6">
                         <div class="grid grid-cols-2 gap-3">
                             <div class="bg-gradient-to-br from-orange-50 to-amber-50 rounded-xl p-4 text-center border border-orange-100">
-                                <p class="text-2xl font-bold text-green-600">Active</p>
+                                <p class="text-2xl font-bold text-orange-600">Active</p>
                                 <p class="text-xs text-gray-500 mt-1">Account Status</p>
                             </div>
-                            <div class="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-4 text-center border border-green-100">
-                                <p class="text-2xl font-bold text-green-600">Verified</p>
+                            <div class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-4 text-center border border-blue-100">
+                                <p class="text-2xl font-bold text-blue-600">Verified</p>
                                 <p class="text-xs text-gray-500 mt-1">Email Status</p>
                             </div>
                         </div>
@@ -130,13 +146,13 @@
                         <nav class="flex" aria-label="Tabs">
                             <button @click="activeTab = 'profile'"
                                     :class="activeTab === 'profile'
-                                        ? 'border-green-500 text-green-600 bg-white'
+                                        ? 'border-orange-500 text-orange-600 bg-white'
                                         : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-100'"
                                     class="flex-1 py-4 px-4 text-center border-b-2 font-medium text-sm transition-all duration-200 relative">
                                 <div class="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2">
-                                    <div :class="activeTab === 'profile' ? 'bg-green-100' : 'bg-gray-100'"
+                                    <div :class="activeTab === 'profile' ? 'bg-orange-100' : 'bg-gray-100'"
                                          class="p-2 rounded-lg transition-colors">
-                                        <x-icons.user :class="activeTab === 'profile' ? 'text-green-500' : 'text-gray-400'" class="w-5 h-5" />
+                                        <x-icons.user :class="activeTab === 'profile' ? 'text-orange-500' : 'text-gray-400'" class="w-5 h-5" />
                                     </div>
                                     <span class="hidden sm:inline">Profile Info</span>
                                     <span class="sm:hidden text-xs">Profile</span>
@@ -144,13 +160,13 @@
                             </button>
                             <button @click="activeTab = 'password'"
                                     :class="activeTab === 'password'
-                                        ? 'border-green-500 text-green-600 bg-white'
+                                        ? 'border-orange-500 text-orange-600 bg-white'
                                         : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-100'"
                                     class="flex-1 py-4 px-4 text-center border-b-2 font-medium text-sm transition-all duration-200 relative">
                                 <div class="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2">
-                                    <div :class="activeTab === 'password' ? 'bg-green-100' : 'bg-gray-100'"
+                                    <div :class="activeTab === 'password' ? 'bg-orange-100' : 'bg-gray-100'"
                                          class="p-2 rounded-lg transition-colors">
-                                        <x-icons.key :class="activeTab === 'password' ? 'text-green-500' : 'text-gray-400'" class="w-5 h-5" />
+                                        <x-icons.key :class="activeTab === 'password' ? 'text-orange-500' : 'text-gray-400'" class="w-5 h-5" />
                                     </div>
                                     <span class="hidden sm:inline">Password</span>
                                     <span class="sm:hidden text-xs">Password</span>
@@ -181,7 +197,7 @@
                              x-transition:enter-start="opacity-0 transform translate-y-2"
                              x-transition:enter-end="opacity-100 transform translate-y-0">
                             <div class="flex items-center mb-6">
-                                <div class="p-3 bg-gradient-to-br from-green-500 to-emerald-500 rounded-xl shadow-lg shadow-green-500/20">
+                                <div class="p-3 bg-gradient-to-br from-orange-500 to-amber-500 rounded-xl shadow-lg shadow-orange-500/20">
                                     <x-icons.user class="w-6 h-6 text-white" />
                                 </div>
                                 <div class="ml-4">
@@ -197,10 +213,10 @@
                                         <label class="block text-sm font-semibold text-gray-700 mb-2">Full Name</label>
                                         <div class="relative">
                                             <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                                <x-icons.user class="w-5 h-5 text-gray-400 group-focus-within:text-green-500 transition-colors" />
+                                                <x-icons.user class="w-5 h-5 text-gray-400 group-focus-within:text-orange-500 transition-colors" />
                                             </div>
                                             <input type="text" wire:model="name" required
-                                                   class="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl shadow-sm focus:border-green-500 focus:ring-2 focus:ring-green-500/20 transition-all duration-200 text-gray-900 placeholder-gray-400"
+                                                   class="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl shadow-sm focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition-all duration-200 text-gray-900 placeholder-gray-400"
                                                    placeholder="Enter your full name">
                                         </div>
                                         @error('name') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
@@ -211,10 +227,10 @@
                                         <label class="block text-sm font-semibold text-gray-700 mb-2">Email Address</label>
                                         <div class="relative">
                                             <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                                <x-icons.envelope class="w-5 h-5 text-gray-400 group-focus-within:text-green-500 transition-colors" />
+                                                <x-icons.envelope class="w-5 h-5 text-gray-400 group-focus-within:text-orange-500 transition-colors" />
                                             </div>
                                             <input type="email" wire:model="email" required
-                                                   class="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl shadow-sm focus:border-green-500 focus:ring-2 focus:ring-green-500/20 transition-all duration-200 text-gray-900 placeholder-gray-400"
+                                                   class="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl shadow-sm focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition-all duration-200 text-gray-900 placeholder-gray-400"
                                                    placeholder="Enter your email">
                                         </div>
                                         @error('email') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
@@ -249,7 +265,7 @@
 
                                 <div class="pt-4 flex flex-col sm:flex-row sm:justify-end gap-3">
                                     <button type="submit" wire:loading.attr="disabled"
-                                            class="w-full sm:w-auto inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-500 text-white font-semibold rounded-xl hover:from-green-600 hover:to-emerald-600 focus:ring-4 focus:ring-green-500/25 transition-all duration-200 shadow-lg shadow-orange-500/25 disabled:opacity-75 disabled:cursor-not-allowed">
+                                            class="w-full sm:w-auto inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-orange-500 to-amber-500 text-white font-semibold rounded-xl hover:from-orange-600 hover:to-amber-600 focus:ring-4 focus:ring-orange-500/25 transition-all duration-200 shadow-lg shadow-orange-500/25 disabled:opacity-75 disabled:cursor-not-allowed">
                                         <x-icons.check wire:loading.remove wire:target="updateProfile" class="w-5 h-5 mr-2" />
                                         <svg wire:loading wire:target="updateProfile" class="animate-spin h-5 w-5 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -269,7 +285,7 @@
                              x-transition:enter-end="opacity-100 transform translate-y-0"
                              style="display: none;">
                             <div class="flex items-center mb-6">
-                                <div class="p-3 bg-gradient-to-br from-green-500 to-emerald-500 rounded-xl shadow-lg shadow-green-500/20">
+                                <div class="p-3 bg-gradient-to-br from-orange-500 to-amber-500 rounded-xl shadow-lg shadow-orange-500/20">
                                     <x-icons.key class="w-6 h-6 text-white" />
                                 </div>
                                 <div class="ml-4">
@@ -284,10 +300,10 @@
                                     <label class="block text-sm font-semibold text-gray-700 mb-2">Current Password</label>
                                     <div class="relative">
                                         <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                            <x-icons.lock-closed class="w-5 h-5 text-gray-400 group-focus-within:text-green-500 transition-colors" />
+                                            <x-icons.lock-closed class="w-5 h-5 text-gray-400 group-focus-within:text-orange-500 transition-colors" />
                                         </div>
                                         <input type="password" wire:model="current_password" required
-                                               class="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl shadow-sm focus:border-green-500 focus:ring-2 focus:ring-green-500/20 transition-all duration-200 text-gray-900 placeholder-gray-400"
+                                               class="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl shadow-sm focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition-all duration-200 text-gray-900 placeholder-gray-400"
                                                placeholder="Enter current password">
                                     </div>
                                     @error('current_password') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
@@ -299,10 +315,10 @@
                                         <label class="block text-sm font-semibold text-gray-700 mb-2">New Password</label>
                                         <div class="relative">
                                             <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                                <x-icons.key class="w-5 h-5 text-gray-400 group-focus-within:text-green-500 transition-colors" />
+                                                <x-icons.key class="w-5 h-5 text-gray-400 group-focus-within:text-orange-500 transition-colors" />
                                             </div>
                                             <input type="password" wire:model="new_password" required
-                                                   class="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl shadow-sm focus:border-green-500 focus:ring-2 focus:ring-green-500/20 transition-all duration-200 text-gray-900 placeholder-gray-400"
+                                                   class="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl shadow-sm focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition-all duration-200 text-gray-900 placeholder-gray-400"
                                                    placeholder="Enter new password">
                                         </div>
                                         @error('new_password') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
@@ -312,31 +328,31 @@
                                         <label class="block text-sm font-semibold text-gray-700 mb-2">Confirm New Password</label>
                                         <div class="relative">
                                             <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                                <x-icons.check class="w-5 h-5 text-gray-400 group-focus-within:text-green-500 transition-colors" />
+                                                <x-icons.check class="w-5 h-5 text-gray-400 group-focus-within:text-orange-500 transition-colors" />
                                             </div>
                                             <input type="password" wire:model="new_password_confirmation" required
-                                                   class="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl shadow-sm focus:border-green-500 focus:ring-2 focus:ring-green-500/20 transition-all duration-200 text-gray-900 placeholder-gray-400"
+                                                   class="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl shadow-sm focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition-all duration-200 text-gray-900 placeholder-gray-400"
                                                    placeholder="Confirm new password">
                                         </div>
                                     </div>
                                 </div>
 
                                 <!-- Password Tips -->
-                                <div class="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-4 border border-green-100">
-                                    <h4 class="text-sm font-semibold text-green-800 mb-2 flex items-center">
+                                <div class="bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl p-4 border border-amber-100">
+                                    <h4 class="text-sm font-semibold text-amber-800 mb-2 flex items-center">
                                         <x-icons.information-circle class="w-4 h-4 mr-2" />
                                         Password Tips
                                     </h4>
-                                    <ul class="text-xs text-green-700 space-y-1">
-                                        <li class="flex items-center"><span class="w-1.5 h-1.5 bg-green-500 rounded-full mr-2"></span>Use at least 6 characters</li>
-                                        <li class="flex items-center"><span class="w-1.5 h-1.5 bg-green-500 rounded-full mr-2"></span>Mix letters, numbers, and symbols</li>
-                                        <li class="flex items-center"><span class="w-1.5 h-1.5 bg-green-500 rounded-full mr-2"></span>Avoid personal information</li>
+                                    <ul class="text-xs text-amber-700 space-y-1">
+                                        <li class="flex items-center"><span class="w-1.5 h-1.5 bg-amber-500 rounded-full mr-2"></span>Use at least 6 characters</li>
+                                        <li class="flex items-center"><span class="w-1.5 h-1.5 bg-amber-500 rounded-full mr-2"></span>Mix letters, numbers, and symbols</li>
+                                        <li class="flex items-center"><span class="w-1.5 h-1.5 bg-amber-500 rounded-full mr-2"></span>Avoid personal information</li>
                                     </ul>
                                 </div>
 
                                 <div class="pt-4 flex flex-col sm:flex-row sm:justify-end gap-3">
                                     <button type="submit" wire:loading.attr="disabled"
-                                            class="w-full sm:w-auto inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-500 text-white font-semibold rounded-xl hover:from-green-600 hover:to-emerald-600 focus:ring-4 focus:ring-green-500/25 transition-all duration-200 shadow-lg shadow-green-500/25 disabled:opacity-75 disabled:cursor-not-allowed">
+                                            class="w-full sm:w-auto inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-orange-500 to-amber-500 text-white font-semibold rounded-xl hover:from-orange-600 hover:to-amber-600 focus:ring-4 focus:ring-orange-500/25 transition-all duration-200 shadow-lg shadow-orange-500/25 disabled:opacity-75 disabled:cursor-not-allowed">
                                         <x-icons.key wire:loading.remove wire:target="updatePassword" class="w-5 h-5 mr-2" />
                                         <svg wire:loading wire:target="updatePassword" class="animate-spin h-5 w-5 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -367,14 +383,14 @@
 
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <!-- Strong Password -->
-                                <div class="group p-5 bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl border border-green-100 hover:shadow-md hover:border-green-200 transition-all duration-300">
+                                <div class="group p-5 bg-gradient-to-br from-orange-50 to-amber-50 rounded-xl border border-orange-100 hover:shadow-md hover:border-orange-200 transition-all duration-300">
                                     <div class="flex items-start">
-                                        <div class="flex-shrink-0 p-2.5 bg-green-100 rounded-xl group-hover:bg-green-200 transition-colors">
-                                            <x-icons.check-circle class="w-6 h-6 text-green-600" />
+                                        <div class="flex-shrink-0 p-2.5 bg-orange-100 rounded-xl group-hover:bg-orange-200 transition-colors">
+                                            <x-icons.check-circle class="w-6 h-6 text-orange-600" />
                                         </div>
                                         <div class="ml-4">
-                                            <h4 class="font-semibold text-green-800">Strong Password</h4>
-                                            <p class="text-sm text-green-700 mt-1">Use at least 6 characters with a mix of letters, numbers, and symbols for maximum security.</p>
+                                            <h4 class="font-semibold text-orange-800">Strong Password</h4>
+                                            <p class="text-sm text-orange-700 mt-1">Use at least 6 characters with a mix of letters, numbers, and symbols for maximum security.</p>
                                         </div>
                                     </div>
                                 </div>
@@ -395,8 +411,8 @@
                                 <!-- Regular Updates -->
                                 <div class="group p-5 bg-gradient-to-br from-orange-50 to-amber-50 rounded-xl border border-orange-100 hover:shadow-md hover:border-orange-200 transition-all duration-300">
                                     <div class="flex items-start">
-                                        <div class="flex-shrink-0 p-2.5 bg-green-100 rounded-xl group-hover:bg-orange-200 transition-colors">
-                                            <x-icons.arrow-path class="w-6 h-6 text-green-600" />
+                                        <div class="flex-shrink-0 p-2.5 bg-orange-100 rounded-xl group-hover:bg-orange-200 transition-colors">
+                                            <x-icons.arrow-path class="w-6 h-6 text-orange-600" />
                                         </div>
                                         <div class="ml-4">
                                             <h4 class="font-semibold text-orange-800">Regular Updates</h4>

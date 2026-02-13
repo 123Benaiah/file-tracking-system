@@ -21,7 +21,6 @@ class CheckRegistryStaff
             return redirect()->route('admin.dashboard');
         }
 
-        // Check is_registry_staff flag first, then fallback to method
         if (!$user->is_registry_staff && !$user->isRegistryStaff()) {
             return redirect()->route('dashboard')
                 ->with('error', 'Access denied. Only Registry staff can access this area.');

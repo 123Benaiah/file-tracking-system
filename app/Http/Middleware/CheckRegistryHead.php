@@ -21,7 +21,6 @@ class CheckRegistryHead
             return redirect()->route('admin.dashboard');
         }
 
-        // Check is_registry_head flag first, then fallback to method
         if (!$user->is_registry_head && !$user->isRegistryHead()) {
             return redirect()->route('dashboard')
                 ->with('error', 'Access denied. Only Registry Head can perform this action.');

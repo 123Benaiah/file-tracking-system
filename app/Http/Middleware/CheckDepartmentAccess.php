@@ -22,7 +22,7 @@ class CheckDepartmentAccess
         }
 
         // Registry head should use the registry dashboard
-        if ($user->isRegistryHead()) {
+        if ($user->is_registry_head || $user->isRegistryHead()) {
             return redirect()->route('registry.dashboard');
         }
 

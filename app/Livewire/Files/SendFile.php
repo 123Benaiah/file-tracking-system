@@ -175,7 +175,8 @@ class SendFile extends Component
         $user = auth()->user();
 
         $query = Employee::where('is_active', true)
-            ->where('employee_number', '!=', $user->employee_number);
+            ->where('employee_number', '!=', $user->employee_number)
+            ->where('role', '!=', 'admin');
 
         if (! empty($this->filterByDepartment)) {
             $query->where(function ($q) {
@@ -187,25 +188,20 @@ class SendFile extends Component
         }
 
         if (! empty($this->recipientSearch)) {
-            $searchTerms = explode(' ', trim($this->recipientSearch));
-            foreach ($searchTerms as $term) {
-                $term = trim($term);
-                if (! empty($term)) {
-                    $query->where(function ($q) use ($term) {
-                        $q->where('name', 'like', "%{$term}%")
-                            ->orWhere('employee_number', 'like', "%{$term}%")
-                            ->orWhereHas('position', function ($q2) use ($term) {
-                                $q2->where('title', 'like', "%{$term}%");
-                            })
-                            ->orWhereHas('department', function ($q2) use ($term) {
-                                $q2->where('name', 'like', "%{$term}%");
-                            })
-                            ->orWhereHas('unitRel', function ($q2) use ($term) {
-                                $q2->where('name', 'like', "%{$term}%");
-                            });
+            $search = '%' . trim($this->recipientSearch) . '%';
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', $search)
+                    ->orWhere('employee_number', 'like', $search)
+                    ->orWhereHas('position', function ($q2) use ($search) {
+                        $q2->where('title', 'like', $search);
+                    })
+                    ->orWhereHas('departmentRel', function ($q2) use ($search) {
+                        $q2->where('name', 'like', $search);
+                    })
+                    ->orWhereHas('unitRel', function ($q2) use ($search) {
+                        $q2->where('name', 'like', $search);
                     });
-                }
-            }
+            });
         }
 
         $receivers = $query->with(['position', 'departmentRel', 'unitRel'])

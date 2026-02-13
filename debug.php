@@ -1,0 +1,1 @@
+<?php $unit = App\Models\Unit::where("name", "Registry")->with("department")->first(); echo "Unit ID: " . $unit?->id . "\n"; echo "Unit Name: " . $unit?->name . "\n"; echo "Department ID: " . $unit?->department_id . "\n"; echo "Department Name: " . $unit?->department?->name . "\n"; echo "Department Code: " . $unit?->department?->code . "\n";
