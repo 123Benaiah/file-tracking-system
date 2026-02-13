@@ -118,7 +118,7 @@ new class extends Component {
                         <a href="{{ route('profile') }}" class="block w-full px-4 py-2 text-left text-sm text-green-700 hover:bg-green-50 font-medium">
                             {{ __('My Profile') }}
                         </a>
-                        <form method="POST" action="{{ route('logout') }}">
+                        <form method="POST" action="{{ route('logout') }}" wire:ignore>
                             @csrf
                             <button type="submit" class="block w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 font-medium">
                                 {{ __('Log Out') }}
@@ -196,7 +196,7 @@ new class extends Component {
                 <a href="{{ route('profile') }}" class="block px-4 py-2 text-sm text-green-700 hover:bg-green-50 font-medium">
                     {{ __('My Profile') }}
                 </a>
-                <form method="POST" action="{{ route('logout') }}" x-data="{ loggingOut: false }" @submit="loggingOut = true">
+                <form method="POST" action="{{ route('logout') }}" x-data="{ loggingOut: false }" @submit="loggingOut = true" wire:ignore>
                     @csrf
                     <button type="submit" :disabled="loggingOut" class="flex w-full items-center px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 font-medium disabled:opacity-75">
                         <svg x-show="loggingOut" x-cloak class="animate-spin h-4 w-4 mr-2 text-red-500" fill="none" viewBox="0 0 24 24">

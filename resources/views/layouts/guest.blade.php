@@ -40,39 +40,29 @@
             <div class="absolute bottom-0 left-0 w-72 h-72 bg-red-500 rounded-full filter blur-3xl opacity-15 translate-y-1/2 -translate-x-1/2"></div>
 
             <div class="relative z-10 w-full max-w-md sm:max-w-2xl">
-                <!-- Mobile: Floating Lottie bubble above card -->
-                <div class="sm:hidden flex flex-col items-center relative z-20 mb-[-32px]">
-                    <div class="w-24 h-24 bg-gradient-to-br from-gray-900 to-gray-800 rounded-full shadow-2xl p-3 ring-4 ring-white/20">
-                        <lottie-player
-                            src="/search.json"
-                            background="transparent"
-                            speed="1"
-                            style="width: 100%; height: 100%;"
-                            loop
-                            autoplay>
-                        </lottie-player>
-                    </div>
-                </div>
-
                 <!-- Unified Card -->
                 <div class="bg-white rounded-xl sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col sm:flex-row">
-                    <!-- Desktop Left Side - Branding -->
-                    <div class="sm:w-1/2 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 p-6 sm:p-8 flex-col justify-center hidden sm:flex">
+                    <!-- Left Side - Branding -->
+                    <div class="sm:w-1/2 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 p-4 sm:p-8 flex flex-col justify-center">
+                        <!-- Title on top - smaller on mobile -->
+                        <div class="text-center mb-3 sm:mb-4">
+                            <h1 class="text-xl sm:text-2xl font-bold text-white">File Tracking System</h1>
+                        </div>
+
                         <!-- Lottie Animation -->
-                        <div class="w-full max-w-[120px] mx-auto">
+                        <div class="w-full max-w-[80px] sm:max-w-[120px] mx-auto h-20 sm:h-[120px]">
                             <lottie-player
                                 src="/search.json"
                                 background="transparent"
                                 speed="1"
-                                style="width: 100%; height: 120px;"
+                                style="width: 100%; height: 100%;"
                                 loop
                                 autoplay>
                             </lottie-player>
                         </div>
 
                         <!-- Text Content -->
-                        <div class="text-center mt-4">
-                            <h2 class="text-xl sm:text-2xl font-bold text-white mb-2">File Tracking System</h2>
+                        <div class="text-center mt-3 sm:mt-4">
                             <p class="text-gray-300 text-xs sm:text-sm max-w-xs mx-auto">
                                 Track, manage, and monitor your files efficiently.
                             </p>
@@ -109,45 +99,12 @@
 
                     <!-- Right Side - Login Form -->
                     <div class="w-full p-6 sm:p-8 flex flex-col justify-center bg-white">
-                        <!-- Mobile: branding text + features below floating bubble -->
-                        <div class="sm:hidden text-center pt-6 mb-3">
-                            <h2 class="text-lg font-bold text-gray-900">File Tracking System</h2>
-                            <p class="text-xs text-gray-500 mt-1 mb-3">Track, manage & monitor files</p>
-                            <div class="flex justify-center gap-5 mb-4">
-                                <div class="flex flex-col items-center">
-                                    <div class="w-9 h-9 bg-orange-50 rounded-xl flex items-center justify-center border border-orange-200">
-                                        <svg class="w-4 h-4 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                                        </svg>
-                                    </div>
-                                    <p class="text-[10px] font-semibold text-gray-500 mt-1">Track</p>
-                                </div>
-                                <div class="flex flex-col items-center">
-                                    <div class="w-9 h-9 bg-green-50 rounded-xl flex items-center justify-center border border-green-200">
-                                        <svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
-                                        </svg>
-                                    </div>
-                                    <p class="text-[10px] font-semibold text-gray-500 mt-1">Send</p>
-                                </div>
-                                <div class="flex flex-col items-center">
-                                    <div class="w-9 h-9 bg-red-50 rounded-xl flex items-center justify-center border border-red-200">
-                                        <svg class="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
-                                        </svg>
-                                    </div>
-                                    <p class="text-[10px] font-semibold text-gray-500 mt-1">Receive</p>
-                                </div>
-                            </div>
-                            <div class="border-t border-gray-100"></div>
-                        </div>
-
                         <!-- Welcome text -->
                         <div class="text-center mb-5">
-                            <a href="/" wire:navigate class="hidden sm:inline-block">
-                                <x-application-logo class="h-10 w-auto mx-auto" />
+                            <a href="/" wire:navigate class="flex justify-center">
+                                <x-application-logo class="h-10 w-auto" />
                             </a>
-                            <h1 class="sm:mt-4 text-xl font-bold text-gray-900">Welcome Back</h1>
+                            <h1 class="mt-4 text-xl font-bold text-gray-900">Welcome Back</h1>
                             <p class="mt-1 text-sm text-gray-500">Sign in to your account</p>
                         </div>
 
