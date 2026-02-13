@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-  <strong>A Comprehensive Web-Based File Tracking Solution for Government Organizations</strong>
+  <strong>A Comprehensive Web-Based File Tracking Solution for Ministry of Home Affairs and Internal Security</strong>
 </p>
 
 <p align="center">
