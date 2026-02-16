@@ -25,7 +25,7 @@ new class extends Component {
     }
 }; ?>
 
-<nav x-data="{ open: false }" class="bg-white border-b border-gray-200 shadow-sm">
+<nav wire:poll.2s.visible x-data="{ open: false }" class="bg-white border-b border-gray-200 shadow-sm">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between h-16">
             <div class="flex">
@@ -118,7 +118,7 @@ new class extends Component {
                         <a href="{{ route('profile') }}" class="block w-full px-4 py-2 text-left text-sm text-green-700 hover:bg-green-50 font-medium">
                             {{ __('My Profile') }}
                         </a>
-                        <form method="POST" action="{{ route('logout') }}" wire:ignore>
+                        <form method="POST" action="{{ route('logout') }}" class="logout-form" wire:ignore>
                             @csrf
                             <button type="submit" class="block w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 font-medium">
                                 {{ __('Log Out') }}
@@ -196,17 +196,32 @@ new class extends Component {
                 <a href="{{ route('profile') }}" class="block px-4 py-2 text-sm text-green-700 hover:bg-green-50 font-medium">
                     {{ __('My Profile') }}
                 </a>
-                <form method="POST" action="{{ route('logout') }}" x-data="{ loggingOut: false }" @submit="loggingOut = true" wire:ignore>
+                <form method="POST" action="{{ route('logout') }}" class="logout-form" wire:ignore>
                     @csrf
-                    <button type="submit" :disabled="loggingOut" class="flex w-full items-center px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 font-medium disabled:opacity-75">
-                        <svg x-show="loggingOut" x-cloak class="animate-spin h-4 w-4 mr-2 text-red-500" fill="none" viewBox="0 0 24 24">
-                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
-                        <span x-show="!loggingOut">{{ __('Log Out') }}</span>
-                        <span x-show="loggingOut" x-cloak>{{ __('Logging out...') }}</span>
+                    <button type="submit" class="flex w-full items-center px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 font-medium">
+                        {{ __('Log Out') }}
                     </button>
                 </form>
+                <script>
+                    document.querySelectorAll('.logout-form').forEach(function(form) {
+                        form.addEventListener('submit', function(e) {
+                            e.preventDefault();
+                            var action = form.action;
+                            var csrf = form.querySelector('input[name="_token"]').value;
+                            fetch(action, {
+                                method: 'POST',
+                                headers: {
+                                    'X-CSRF-TOKEN': csrf,
+                                    'X-Requested-With': 'XMLHttpRequest'
+                                }
+                            }).then(function() {
+                                window.location.href = '/';
+                            }).catch(function() {
+                                window.location.href = '/';
+                            });
+                        });
+                    });
+                </script>
             </div>
         </div>
     </div>

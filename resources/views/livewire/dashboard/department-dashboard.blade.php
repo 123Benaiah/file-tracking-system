@@ -70,7 +70,7 @@
                             You have <strong class="text-yellow-900">{{ $stats['pending_receipts'] }}</strong> file(s) waiting for confirmation.
                         </p>
                     </div>
-                    <a href="{{ route('files.receive') }}" wire:navigate class="w-full sm:w-auto text-center px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-yellow-500 to-orange-500 rounded-lg hover:from-yellow-600 hover:to-orange-600 shadow-lg shadow-yellow-500/20 transition-all">
+                    <a href="{{ route('files.confirm') }}" wire:navigate class="w-full sm:w-auto text-center px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-yellow-500 to-orange-500 rounded-lg hover:from-yellow-600 hover:to-orange-600 shadow-lg shadow-yellow-500/20 transition-all">
                         View Now &rarr;
                     </a>
                 </div>

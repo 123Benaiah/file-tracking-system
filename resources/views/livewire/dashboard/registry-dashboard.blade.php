@@ -1,4 +1,4 @@
-<div class="py-4 sm:py-8" x-data="{ showFilters: false, showRecentlyReceived: false, showSentPending: false }">
+<div wire:poll.2s.visible class="py-4 sm:py-8" x-data="{ showFilters: false, showRecentlyReceived: false, showSentPending: false }">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <!-- Stats Cards -->
         <div class="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">

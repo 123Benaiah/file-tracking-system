@@ -71,7 +71,8 @@ class ConfirmFiles extends Component
                 : 'File "'.$movement->file->new_file_no.'" has been received successfully.'
         );
 
-        $this->dispatch('receipt-confirmed');
+        $this->dispatch('receipt-confirmed')->self();
+        return $this->redirect(route('files.confirm'), navigate: true);
     }
 
     public function render()

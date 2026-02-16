@@ -228,8 +228,8 @@ class RegistryDashboard extends Component
 
         $this->toastSuccess('File Returned to Registry', 'File "'.$movement->file->new_file_no.'" has been returned to registry and marked as completed.');
 
-        // Dispatch event to refresh navigation pending count
-        $this->dispatch('receipt-confirmed');
+        $this->dispatch('receipt-confirmed')->self();
+        return $this->redirect(route('registry.dashboard'), navigate: true);
     }
 
     public function render()

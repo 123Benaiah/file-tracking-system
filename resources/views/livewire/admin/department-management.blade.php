@@ -167,7 +167,7 @@
                                 <div class="border-t border-gray-200 pt-4">
                                     @php
                                         $existingRegistry = $existingRegistryDepartment ?? null;
-                                        $isDisabled = $existingRegistry && $editMode && !$is_registry_department;
+                                        $isDisabled = $existingRegistry && (!$editMode || ($editMode && !$is_registry_department));
                                         $tooltip = $existingRegistry && $isDisabled ? 'Another department ("' . $existingRegistry->name . '") is already the Registry Department' : '';
                                     @endphp
                                     <div class="flex items-center {{ $isDisabled ? 'opacity-60' : '' }}">
@@ -175,7 +175,7 @@
                                                wire:model.live="is_registry_department"
                                                id="is_registry_department"
                                                class="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
-                                               @disabled($isDisabled)
+                                               :disabled="{{ $isDisabled ? 'true' : 'false' }}"
                                                @if($is_registry_department) checked @endif>
                                         <label for="is_registry_department" class="ml-2 block text-sm text-gray-900">
                                             This is the Registry Department

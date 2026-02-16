@@ -29,19 +29,19 @@ class MohaisOrganizationalStructureSeeder extends Seeder
             ['title' => 'Director, National Forensic Science & Biometric', 'code' => 'DIR-NFSB', 'position_type' => 'director', 'level' => 10],
             ['title' => 'Director, Anti-Human Trafficking', 'code' => 'DIR-AHT', 'position_type' => 'director', 'level' => 10],
             ['title' => 'Director, National Anti-Terrorism Centre', 'code' => 'DIR-NATC', 'position_type' => 'director', 'level' => 10],
-            
+
             // Assistant Director level (Unit heads)
-            ['title' => 'Assistant Director (various units)', 'code' => 'AD-UNIT', 'position_type' => 'assistant_director', 'level' => 8],
-            
+            ['title' => 'Assistant Director', 'code' => 'AD-UNIT', 'position_type' => 'assistant_director', 'level' => 8],
+
             // Supervisor level
             ['title' => 'Supervisor', 'code' => 'SUP', 'position_type' => 'supervisor', 'level' => 6],
-            
+
             // Staff level
             ['title' => 'Senior Officer', 'code' => 'SO', 'position_type' => 'staff', 'level' => 4],
             ['title' => 'Officer', 'code' => 'OFF', 'position_type' => 'staff', 'level' => 3],
             ['title' => 'Junior Officer', 'code' => 'JO', 'position_type' => 'staff', 'level' => 2],
             ['title' => 'Assistant', 'code' => 'AST', 'position_type' => 'staff', 'level' => 1],
-            
+
             // Support level
             ['title' => 'Administrative Assistant', 'code' => 'AA', 'position_type' => 'support', 'level' => 1],
             ['title' => 'Secretary', 'code' => 'SEC', 'position_type' => 'support', 'level' => 1],
@@ -162,27 +162,27 @@ class MohaisOrganizationalStructureSeeder extends Seeder
             ['name' => 'Recruitment Unit', 'code' => 'HRA-REC', 'department_code' => 'HRA'],
             ['name' => 'Training Unit', 'code' => 'HRA-TRN', 'department_code' => 'HRA'],
             ['name' => 'Employee Services Unit', 'code' => 'HRA-ESV', 'department_code' => 'HRA'],
-            
+
             // NRPC Units
             ['name' => 'Passport Unit', 'code' => 'NRPC-PAS', 'department_code' => 'NRPC'],
             ['name' => 'Citizenship Unit', 'code' => 'NRPC-CIT', 'department_code' => 'NRPC'],
             ['name' => 'Registration Unit', 'code' => 'NRPC-REG', 'department_code' => 'NRPC'],
-            
+
             // Finance Units
             ['name' => 'Budget Unit', 'code' => 'FIN-BUD', 'department_code' => 'FIN'],
             ['name' => 'Accounts Unit', 'code' => 'FIN-ACC', 'department_code' => 'FIN'],
             ['name' => 'Payroll Unit', 'code' => 'FIN-PAY', 'department_code' => 'FIN'],
-            
+
             // ICT Units
             ['name' => 'Infrastructure Unit', 'code' => 'ICT-INF', 'department_code' => 'ICT'],
             ['name' => 'Software Development Unit', 'code' => 'ICT-SWD', 'department_code' => 'ICT'],
             ['name' => 'Support Unit', 'code' => 'ICT-SUP', 'department_code' => 'ICT'],
-            
+
             // NFA Units
             ['name' => 'DNA Unit', 'code' => 'NFA-DNA', 'department_code' => 'NFA'],
             ['name' => 'Fingerprint Unit', 'code' => 'NFA-FPR', 'department_code' => 'NFA'],
             ['name' => 'Crime Lab Unit', 'code' => 'NFA-CRL', 'department_code' => 'NFA'],
-            
+
             // NFSB Units
             ['name' => 'Biometric Unit', 'code' => 'NFSB-BIO', 'department_code' => 'NFSB'],
             ['name' => 'Forensic Analysis Unit', 'code' => 'NFSB-FAU', 'department_code' => 'NFSB'],

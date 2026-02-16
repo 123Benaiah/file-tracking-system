@@ -208,7 +208,7 @@
                                     <div class="flex items-center {{ $isDisabled ? 'opacity-60' : '' }}">
                                         <input type="checkbox" wire:model.live="is_registry_unit" id="is_registry_unit"
                                                class="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
-                                               @disabled($isDisabled)
+                                               :disabled="{{ $isDisabled ? 'true' : 'false' }}"
                                                @if($is_registry_unit || ($registryDepartment && $isUnderRegistryDept)) checked @endif>
                                         <label for="is_registry_unit" class="ml-2 block text-sm text-gray-900">
                                             This is a Registry Unit
