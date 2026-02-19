@@ -20,6 +20,7 @@ use App\Livewire\Admin\PositionManagement;
 use App\Livewire\Admin\DepartmentHeadManagement;
 use App\Livewire\Admin\UnitHeadManagement;
 use App\Livewire\Profile\Profile;
+use App\Http\Controllers\ChatbotController;
 
 Route::get('/', function () {
     return redirect()->route('login');
@@ -76,6 +77,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/files/receive', ReceiveFiles::class)->name('files.receive');
         Route::get('/files/{file}/send', SendFile::class)->name('files.send');
         Route::get('/files/confirm', ConfirmFiles::class)->name('files.confirm');
+        Route::get('/files/sent-pending', \App\Livewire\Files\SentPendingFiles::class)->name('files.sent-pending');
+        Route::get('/files/movement/{movementId}/change-recipient', \App\Livewire\Files\ChangeRecipient::class)->name('files.change-recipient');
     });
 
     // Read-only routes accessible to all authenticated users
@@ -83,4 +86,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/files/{file}', function (\App\Models\File $file) {
         return view('files.show', compact('file'));
     })->name('files.show');
+
+    // Chatbot routes (non-admin users, rate-limited)
+    Route::middleware(['non.admin', 'throttle:10,1'])->group(function () {
+        Route::post('/chatbot', [ChatbotController::class, 'handleMessage'])->name('chatbot.message');
+        Route::get('/chatbot/system-data', [ChatbotController::class, 'getSystemData'])->name('chatbot.system-data');
+    });
 });

@@ -12,11 +12,15 @@
         <link rel="apple-touch-icon" href="{{ asset('logo-fts.png') }}">
 
         <!-- Fonts -->
-        <link rel="preconnect" href="https://fonts.bunny.net">
-        <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
+        <link rel="preconnect" href="https://fonts.bunny.net" crossorigin>
+        <link rel="preload" href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+        <noscript><link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet"></noscript>
 
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
+
+        <!-- Puter.js AI SDK (client-side, free) -->
+        <script src="https://js.puter.com/v2/"></script>
     </head>
     <body class="font-sans antialiased overflow-x-hidden">
         <div class="min-h-screen bg-gradient-to-br from-slate-100 via-gray-100 to-slate-200 relative overflow-x-hidden">
@@ -43,5 +47,8 @@
 <!-- Toast Notifications -->
             <x-toast-notifications />
         </div>
+
+        {{-- AI Chatbot Widget --}}
+        @include('partials.chatbot')
     </body>
 </html>
