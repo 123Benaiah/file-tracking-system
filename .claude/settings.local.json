@@ -17,7 +17,12 @@
       "Bash(npm uninstall:*)",
       "Bash(git status:*)",
       "Bash(del \"C:\\\\Users\\\\Benaiah L\\\\OneDrive\\\\Documents\\\\file-tracking-system\\\\resources\\\\views\\\\livewire\\\\notifications\\\\pending-receipts.blade.php\")",
-      "Bash(del \"C:\\\\Users\\\\Benaiah L\\\\OneDrive\\\\Documents\\\\file-tracking-system\\\\app\\\\Livewire\\\\Notifications\\\\PendingReceipts.php\")"
+      "Bash(del \"C:\\\\Users\\\\Benaiah L\\\\OneDrive\\\\Documents\\\\file-tracking-system\\\\app\\\\Livewire\\\\Notifications\\\\PendingReceipts.php\")",
+      "Bash(node -e:*)",
+      "Bash(php -r:*)",
+      "Bash(php:*)",
+      "Bash(if not exist \"C:\\\\Users\\\\Benaiah L\\\\OneDrive\\\\Documents\\\\file-tracking-system\\\\public\\\\assets\\\\certification\" mkdir \"C:\\\\Users\\\\Benaiah L\\\\OneDrive\\\\Documents\\\\file-tracking-system\\\\public\\\\assets\\\\certification\")",
+      "Bash(curl:*)"
     ]
   }
 }

@@ -18,7 +18,7 @@ class Admin
 
         if (!$user->canAccessAdminPanel()) {
             return redirect()->route('dashboard')
-                ->with('error', 'You do not have permission to access the admin panel.');
+                ->with('toast', ['type' => 'error', 'title' => 'Access Denied', 'message' => 'You do not have permission to access the admin panel.']);
         }
 
         return $next($request);

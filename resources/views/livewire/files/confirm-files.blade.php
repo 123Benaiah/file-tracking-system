@@ -57,7 +57,7 @@
                                 @endif
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm text-gray-900">{{ $movement->sender->name ?? 'N/A' }}</div>
+                                <div class="text-sm text-gray-900">{{ $movement->sender->formal_name ?? 'N/A' }}</div>
                                 <div class="text-sm text-gray-500">{{ $movement->sender->positionTitle ?? '' }}</div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -122,7 +122,7 @@
                     </span>
                 </div>
                 <div class="text-sm text-gray-500 mb-2">
-                    <p><span class="font-medium text-gray-700">From:</span> {{ $movement->sender->name ?? 'N/A' }}</p>
+                    <p><span class="font-medium text-gray-700">From:</span> {{ $movement->sender->formal_name ?? 'N/A' }}</p>
                     <p><span class="font-medium text-gray-700">Sent:</span> {{ $movement->sent_at->format('M d, Y h:i A') }}</p>
                 </div>
                 @if($movement->sender_comments)

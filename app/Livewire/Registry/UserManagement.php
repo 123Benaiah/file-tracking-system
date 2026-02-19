@@ -2,11 +2,15 @@
 
 namespace App\Livewire\Registry;
 
+use App\Models\AuditLog;
 use App\Models\Department;
 use App\Models\Employee;
+use App\Models\File;
+use App\Models\FileMovement;
 use App\Models\Position;
 use App\Models\Unit;
 use App\Traits\WithToast;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -122,33 +126,61 @@ class UserManagement extends Component
     {
         $this->validate();
 
-        $data = [
-            'employee_number' => $this->employee_number,
-            'name' => $this->name,
-            'email' => $this->email,
-            'position_id' => $this->position_id,
-            'department_id' => $this->department_id,
-            'unit_id' => $this->unit_id ?: null,
-            'office' => $this->office,
-            'role' => $this->role,
-            'is_active' => $this->is_active,
-            'created_by' => auth()->user()->employee_number,
-        ];
+        try {
+            $data = [
+                'employee_number' => $this->employee_number,
+                'name' => $this->name,
+                'email' => $this->email,
+                'position_id' => $this->position_id,
+                'department_id' => $this->department_id,
+                'unit_id' => $this->unit_id ?: null,
+                'office' => $this->office,
+                'role' => $this->role,
+                'is_active' => $this->is_active,
+                'created_by' => auth()->user()->employee_number,
+            ];
 
-        if ($this->password) {
-            $data['password'] = Hash::make($this->password);
+            if ($this->password) {
+                $data['password'] = Hash::make($this->password);
+            }
+
+            if ($this->editMode) {
+                $employee = Employee::where('employee_number', $this->selectedEmployeeId)->firstOrFail();
+
+                $oldEmpNo = $this->selectedEmployeeId;
+                $newEmpNo = $this->employee_number;
+
+                DB::transaction(function () use ($employee, $data, $oldEmpNo, $newEmpNo) {
+                    if ($oldEmpNo !== $newEmpNo) {
+                        DB::statement('SET FOREIGN_KEY_CHECKS=0');
+
+                        Employee::where('created_by', $oldEmpNo)->update(['created_by' => $newEmpNo]);
+                        File::where('current_holder', $oldEmpNo)->update(['current_holder' => $newEmpNo]);
+                        File::where('registered_by', $oldEmpNo)->update(['registered_by' => $newEmpNo]);
+                        DB::table('files')->where('merged_by', $oldEmpNo)->update(['merged_by' => $newEmpNo]);
+                        FileMovement::where('sender_emp_no', $oldEmpNo)->update(['sender_emp_no' => $newEmpNo]);
+                        FileMovement::where('intended_receiver_emp_no', $oldEmpNo)->update(['intended_receiver_emp_no' => $newEmpNo]);
+                        FileMovement::where('actual_receiver_emp_no', $oldEmpNo)->update(['actual_receiver_emp_no' => $newEmpNo]);
+                        DB::table('file_attachments')->where('uploaded_by', $oldEmpNo)->update(['uploaded_by' => $newEmpNo]);
+                        AuditLog::where('employee_number', $oldEmpNo)->update(['employee_number' => $newEmpNo]);
+
+                        DB::statement('SET FOREIGN_KEY_CHECKS=1');
+                    }
+
+                    $employee->update($data);
+                });
+
+                $this->toastSuccess('Employee Updated', $this->name.' has been updated successfully.');
+            } else {
+                Employee::create($data);
+                $this->toastSuccess('Employee Created', $this->name.' has been added successfully.');
+            }
+
+            $this->closeModal();
+        } catch (\Exception $e) {
+            report($e);
+            $this->toastError('Operation Failed', 'Something went wrong. Please try again or contact the administrator.');
         }
-
-        if ($this->editMode) {
-            $employee = Employee::where('employee_number', $this->selectedEmployeeId)->firstOrFail();
-            $employee->update($data);
-            $this->toastSuccess('Employee Updated', $this->name.' has been updated successfully.');
-        } else {
-            Employee::create($data);
-            $this->toastSuccess('Employee Created', $this->name.' has been added successfully.');
-        }
-
-        $this->closeModal();
     }
 
     public function toggleActive($employeeNumber)
@@ -231,16 +263,106 @@ class UserManagement extends Component
     public function deleteSelected()
     {
         $this->isDeleting = true;
-        
-        $count = Employee::whereIn('employee_number', $this->selectedEmployees)->count();
-        Employee::whereIn('employee_number', $this->selectedEmployees)->delete();
+
+        $employees = Employee::whereIn('employee_number', $this->selectedEmployees)->get();
+
+        // Block deletion of registry head if they hold files
+        foreach ($employees as $employee) {
+            if ($employee->isRegistryHead()) {
+                $heldCount = File::where('current_holder', $employee->employee_number)
+                    ->whereNotIn('status', ['archived', 'merged'])
+                    ->count();
+
+                if ($heldCount > 0) {
+                    $this->isDeleting = false;
+                    $this->toastError(
+                        'Cannot Delete Registry Head',
+                        'Registry Head (' . $employee->name . ') currently holds ' . $heldCount . ' file(s). All files must be sent and confirmed before deletion.'
+                    );
+                    return;
+                }
+            }
+        }
+
+        $registryHead = Employee::where('is_registry_head', true)
+            ->where('is_active', true)
+            ->first();
+
+        $totalTransferred = 0;
+
+        foreach ($employees as $employee) {
+            // Skip registry head file transfer (they're only deleted if they have 0 files)
+            if ($employee->isRegistryHead()) {
+                Employee::where('created_by', $employee->employee_number)->update(['created_by' => null]);
+                AuditLog::where('employee_number', $employee->employee_number)->delete();
+                $employee->forceDelete();
+                continue;
+            }
+
+            $heldFiles = File::where('current_holder', $employee->employee_number)
+                ->whereNotIn('status', ['archived', 'merged'])
+                ->get();
+
+            if ($heldFiles->count() > 0) {
+                if (!$registryHead) {
+                    $this->isDeleting = false;
+                    $this->toastError('No Registry Head', 'Cannot transfer files — no active Registry Head found.');
+                    return;
+                }
+
+                foreach ($heldFiles as $file) {
+                    FileMovement::where('file_id', $file->id)
+                        ->where('movement_status', 'sent')
+                        ->update([
+                            'movement_status' => 'cancelled',
+                            'receiver_comments' => 'Auto-cancelled: employee ' . $employee->name . ' was deleted.',
+                        ]);
+
+                    FileMovement::create([
+                        'file_id' => $file->id,
+                        'sender_emp_no' => $employee->employee_number,
+                        'intended_receiver_emp_no' => $registryHead->employee_number,
+                        'actual_receiver_emp_no' => $registryHead->employee_number,
+                        'delivery_method' => 'internal_messenger',
+                        'sender_comments' => 'Auto-transferred: employee ' . $employee->name . ' was deleted.',
+                        'movement_status' => 'received',
+                        'sent_at' => now(),
+                        'received_at' => now(),
+                        'sla_days' => 0,
+                    ]);
+
+                    $file->update([
+                        'status' => 'completed',
+                        'current_holder' => $registryHead->employee_number,
+                    ]);
+                }
+
+                $totalTransferred += $heldFiles->count();
+
+                AuditLog::create([
+                    'employee_number' => auth()->user()->employee_number,
+                    'action' => 'files_auto_transferred',
+                    'description' => 'Auto-transferred ' . $heldFiles->count() . ' file(s) from deleted employee ' . $employee->name . ' (' . $employee->employee_number . ') to Registry Head ' . $registryHead->name,
+                    'ip_address' => request()->ip(),
+                    'user_agent' => request()->userAgent(),
+                ]);
+            }
+
+            Employee::where('created_by', $employee->employee_number)->update(['created_by' => null]);
+            AuditLog::where('employee_number', $employee->employee_number)->delete();
+            $employee->forceDelete();
+        }
 
         $this->isDeleting = false;
         $this->showDeleteModal = false;
         $this->selectedEmployees = [];
         $this->selectAll = false;
-        
-        $this->toastSuccess('Employees Deleted', "$count employee(s) have been deleted successfully.");
+
+        $message = $employees->count() . ' employee(s) have been deleted successfully.';
+        if ($totalTransferred > 0) {
+            $message .= ' ' . $totalTransferred . ' file(s) were auto-transferred to the Registry Head.';
+        }
+        $this->toastSuccess('Employees Deleted', $message);
     }
 
     public function updatedDepartmentId()

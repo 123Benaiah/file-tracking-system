@@ -1,31 +1,4 @@
-<?php
-
-use App\Livewire\Actions\Logout;
-use App\Models\FileMovement;
-use Illuminate\Support\Facades\Auth;
-use Livewire\Volt\Component;
-
-new class extends Component {
-    protected $listeners = ['receipt-confirmed' => '$refresh', 'refreshNavigation' => '$refresh', 'fileReceived' => '$refresh'];
-
-    public function logout(Logout $logout): void
-    {
-        $logout();
-        $this->redirect('/', navigate: true);
-    }
-
-    public function getPendingCountProperty()
-    {
-        if (!Auth::check()) {
-            return 0;
-        }
-        return FileMovement::where('intended_receiver_emp_no', Auth::user()->employee_number)
-            ->where('movement_status', 'sent')
-            ->count();
-    }
-}; ?>
-
-<nav wire:poll.2s.visible x-data="{ open: false }" class="bg-white border-b border-gray-200 shadow-sm">
+<nav wire:poll.30s.visible x-data="{ open: false }" class="bg-white border-b border-gray-200 shadow-sm">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between h-16">
             <div class="flex">
@@ -36,11 +9,11 @@ new class extends Component {
                 </div>
 
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                    @if(auth()->user()->isAdmin())
+                    @if($isAdmin)
                         <x-nav-link :href="route('admin.dashboard')" :active="request()->routeIs('admin.*')" wire:navigate>
                             {{ __('Admin Panel') }}
                         </x-nav-link>
-                    @elseif(auth()->user()->isRegistryStaff())
+                    @elseif($isRegistryStaff)
                         <x-nav-link :href="route('registry.dashboard')" :active="request()->routeIs('registry.*')" wire:navigate>
                             {{ __('Registry Dashboard') }}
                         </x-nav-link>
@@ -54,7 +27,7 @@ new class extends Component {
                         {{ __('Track File') }}
                     </x-nav-link>
 
-                    @if(!auth()->user()->isAdmin())
+                    @if(!$isAdmin)
                         <x-nav-link :href="route('files.receive')" :active="request()->routeIs('files.receive')"
                             wire:navigate>
                             {{ __('Received Files') }}
@@ -69,12 +42,32 @@ new class extends Component {
                                 </span>
                             @endif
                         </x-nav-link>
+                        @if($this->sentPendingCount > 0)
+                        <x-nav-link :href="route('files.sent-pending')" :active="false"
+                            wire:navigate>
+                            {{ __('Sent Pending') }}
+                            <span
+                                class="ml-2 inline-flex items-center justify-center px-2 py-0.5 rounded-full text-xs font-bold bg-blue-100 text-blue-600">
+                                {{ $this->sentPendingCount }}
+                            </span>
+                        </x-nav-link>
+                        @endif
                     @endif
                 </div>
             </div>
 
             <div class="hidden sm:flex sm:items-center sm:ms-6">
-                @if(!auth()->user()->isAdmin())
+                @if(!$isAdmin)
+                    @if($this->sentPendingCount > 0)
+                    <a href="{{ route('dashboard') }}#sent-pending" wire:navigate class="relative mr-3 p-2 text-blue-600 hover:text-blue-800" title="Files you sent that are awaiting receipt">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <span class="absolute -top-1 -right-1 inline-flex items-center justify-center px-2 py-0.5 rounded-full text-xs font-bold bg-blue-500 text-white">
+                            {{ $this->sentPendingCount }}
+                        </span>
+                    </a>
+                    @endif
                     <a href="{{ route('files.confirm') }}" class="relative mr-4 p-2 text-gray-500 hover:text-gray-700">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -146,12 +139,12 @@ new class extends Component {
 
     <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden bg-white">
         <div class="pt-2 pb-3 space-y-1">
-            @if(auth()->user()->isAdmin())
+            @if($isAdmin)
                 <x-responsive-nav-link :href="route('admin.dashboard')" :active="request()->routeIs('admin.*')"
                     wire:navigate>
                     {{ __('Admin Panel') }}
                 </x-responsive-nav-link>
-            @elseif(auth()->user()->isRegistryStaff())
+            @elseif($isRegistryStaff)
                 <x-responsive-nav-link :href="route('registry.dashboard')" :active="request()->routeIs('registry.*')"
                     wire:navigate>
                     {{ __('Registry Dashboard') }}
@@ -168,7 +161,7 @@ new class extends Component {
                 {{ __('Track File') }}
             </x-responsive-nav-link>
 
-            @if(!auth()->user()->isAdmin())
+            @if(!$isAdmin)
                 <x-responsive-nav-link :href="route('files.receive')" :active="request()->routeIs('files.receive')"
                     wire:navigate>
                     {{ __('Received Files') }}
@@ -183,12 +176,22 @@ new class extends Component {
                         </span>
                     @endif
                 </x-responsive-nav-link>
+                @if($this->sentPendingCount > 0)
+                <x-responsive-nav-link :href="route('files.sent-pending')" :active="false"
+                    wire:navigate>
+                    {{ __('Sent Pending') }}
+                    <span
+                        class="ml-2 inline-flex items-center justify-center px-2 py-0.5 rounded-full text-xs font-bold bg-blue-100 text-blue-600">
+                        {{ $this->sentPendingCount }}
+                    </span>
+                </x-responsive-nav-link>
+                @endif
             @endif
         </div>
 
         <div class="pt-4 pb-1 border-t border-gray-200">
             <div class="px-4">
-                <div class="font-medium text-base text-gray-800">{{ Auth::user()->name }}</div>
+                <div class="font-medium text-base text-gray-800">{{ Auth::user()->formal_name }}</div>
                 <div class="font-medium text-sm text-gray-500">{{ Auth::user()->email }}</div>
             </div>
 
@@ -207,17 +210,18 @@ new class extends Component {
                         form.addEventListener('submit', function(e) {
                             e.preventDefault();
                             var action = form.action;
-                            var csrf = form.querySelector('input[name="_token"]').value;
+                            var csrf = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
                             fetch(action, {
                                 method: 'POST',
                                 headers: {
                                     'X-CSRF-TOKEN': csrf,
-                                    'X-Requested-With': 'XMLHttpRequest'
+                                    'X-Requested-With': 'XMLHttpRequest',
+                                    'Content-Type': 'application/x-www-form-urlencoded'
                                 }
                             }).then(function() {
-                                window.location.href = '/';
+                                window.location.href = '/login';
                             }).catch(function() {
-                                window.location.href = '/';
+                                window.location.href = '/login';
                             });
                         });
                     });

@@ -20,6 +20,7 @@ class Employee extends Authenticatable
     protected $fillable = [
         'employee_number',
         'name',
+        'gender',
         'email',
         'password',
         'office',
@@ -45,6 +46,17 @@ class Employee extends Authenticatable
         'is_registry_head' => 'boolean',
         'is_registry_staff' => 'boolean',
     ];
+
+    public function getFormalNameAttribute(): string
+    {
+        $prefix = match ($this->gender) {
+            'male' => 'Mr.',
+            'female' => 'Ms.',
+            default => '',
+        };
+
+        return $prefix ? "{$prefix} {$this->name}" : $this->name;
+    }
 
     public function getAuthIdentifierName()
     {

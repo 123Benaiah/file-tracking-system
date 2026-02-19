@@ -128,7 +128,7 @@
                 <table class="min-w-full">
                     <thead class="bg-gray-50 border-b border-gray-100">
                         <tr>
-                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Copy Number</th>
+                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">TJ Number</th>
                             <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Subject</th>
                             <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
                             <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Created</th>
@@ -147,7 +147,7 @@
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="text-sm font-medium text-gray-900">{{ $copy->new_file_no }}</div>
-                                <div class="text-xs text-gray-500">Copy #{{ $copy->copy_number }}</div>
+                                <div class="text-xs text-gray-500">TJ #{{ $copy->tj_number }}</div>
                             </td>
                             <td class="px-6 py-4 text-sm text-gray-700">
                                 <div>{{ Str::limit($copy->subject, 50) }}</div>
@@ -207,7 +207,7 @@
                     <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
                     </svg>
-                    Merge {{ count($selectedCopies) }} Copy/copies
+                    Merge {{ count($selectedCopies) }} TJ file(s)
                 </button>
             </div>
         </div>
@@ -263,7 +263,7 @@
                                 </p>
                                 <ul class="mt-2 text-sm text-gray-600 list-disc list-inside max-h-32 overflow-y-auto">
                                     @foreach($copies->whereIn('id', $selectedCopies) as $copy)
-                                    <li>{{ $copy->new_file_no }} (Copy #{{ $copy->copy_number }})</li>
+                                    <li>{{ $copy->new_file_no }} (TJ #{{ $copy->tj_number }})</li>
                                     @endforeach
                                 </ul>
 

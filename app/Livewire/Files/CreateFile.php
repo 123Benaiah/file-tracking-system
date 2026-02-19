@@ -24,11 +24,11 @@ class CreateFile extends Component
     public $due_date;
     public $attachments = [];
     public $fileCreationType = 'new';
-    public $copyOfFileNo = '';
+    public $tjFileNo = '';
     public $newFileNoExists = false;
     public $oldFileNoExists = false;
     public $oldFileNoData = null;
-    public $copyOfFileData = null;
+    public $tjFileData = null;
     public $isSaving = false;
 
     public $existingSubjects = [
@@ -45,7 +45,7 @@ class CreateFile extends Component
     {
         $rules = [
             'subjectType' => 'required|in:existing,new',
-            'fileCreationType' => 'required|in:new,copy',
+            'fileCreationType' => 'required|in:new,tj',
             'file_title' => 'required|string|max:200',
             'old_file_no' => 'nullable|string|max:50',
             'priority' => 'required|in:normal,urgent,very_urgent',
@@ -58,7 +58,7 @@ class CreateFile extends Component
         if ($this->fileCreationType === 'new') {
             $rules['new_file_no'] = 'required|string|max:100|unique:files,new_file_no';
         } else {
-            $rules['copyOfFileNo'] = 'required|string|max:100';
+            $rules['tjFileNo'] = 'required|string|max:100';
         }
 
         if ($this->subjectType === 'existing') {
@@ -82,8 +82,8 @@ class CreateFile extends Component
     public function updatedFileCreationType()
     {
         if ($this->fileCreationType === 'new') {
-            $this->copyOfFileNo = '';
-            $this->copyOfFileData = null;
+            $this->tjFileNo = '';
+            $this->tjFileData = null;
             $this->generateNewFileNumber();
         } else {
             $this->new_file_no = '';
@@ -91,30 +91,30 @@ class CreateFile extends Component
         }
     }
 
-    public function updatedCopyOfFileNo()
+    public function updatedTjFileNo()
     {
-        $this->copyOfFileData = null;
+        $this->tjFileData = null;
 
-        if (! empty($this->copyOfFileNo) && strlen($this->copyOfFileNo) >= 3) {
-            $originalFile = File::where('new_file_no', $this->copyOfFileNo)
-                ->orWhere('new_file_no', 'like', $this->copyOfFileNo.'-copy%')
+        if (! empty($this->tjFileNo) && strlen($this->tjFileNo) >= 3) {
+            $originalFile = File::where('new_file_no', $this->tjFileNo)
+                ->orWhere('new_file_no', 'like', $this->tjFileNo.'-tj%')
                 ->first();
 
-            if ($originalFile && ! $originalFile->is_copy) {
-                $this->copyOfFileData = [
+            if ($originalFile && ! $originalFile->is_tj) {
+                $this->tjFileData = [
                     'new_file_no' => $originalFile->new_file_no,
                     'subject' => $originalFile->subject,
                     'file_title' => $originalFile->file_title,
                     'status' => $originalFile->status,
-                    'next_copy_number' => $originalFile->getNextCopyNumber(),
+                    'next_tj_number' => $originalFile->getNextTjNumber(),
                 ];
 
-                $this->new_file_no = $originalFile->new_file_no.'-copy'.$originalFile->getNextCopyNumber();
+                $this->new_file_no = $originalFile->new_file_no.'-tj'.$originalFile->getNextTjNumber();
                 $this->subject = $originalFile->subject;
                 $this->file_title = $originalFile->file_title;
                 $this->old_file_no = $originalFile->new_file_no;
             } else {
-                $this->copyOfFileData = null;
+                $this->tjFileData = null;
                 $this->new_file_no = '';
             }
         } else {
@@ -197,12 +197,12 @@ class CreateFile extends Component
         try {
             $subjectValue = $this->subjectType === 'existing' ? $this->subject : $this->newSubject;
 
-            $isCopy = $this->fileCreationType === 'copy';
-            $originalFileNo = $isCopy ? $this->copyOfFileNo : null;
-            $copyNumber = null;
+            $isTj = $this->fileCreationType === 'tj';
+            $originalFileNo = $isTj ? $this->tjFileNo : null;
+            $tjNumber = null;
 
-            if ($isCopy && $this->copyOfFileData) {
-                $copyNumber = $this->copyOfFileData['next_copy_number'];
+            if ($isTj && $this->tjFileData) {
+                $tjNumber = $this->tjFileData['next_tj_number'];
             }
 
             $file = File::create([
@@ -211,8 +211,8 @@ class CreateFile extends Component
                 'old_file_no' => $this->old_file_no,
                 'new_file_no' => $this->new_file_no,
                 'original_file_no' => $originalFileNo,
-                'is_copy' => $isCopy,
-                'copy_number' => $copyNumber,
+                'is_tj' => $isTj,
+                'tj_number' => $tjNumber,
                 'priority' => $this->priority,
                 'status' => 'at_registry',
                 'confidentiality' => $this->confidentiality,
@@ -240,9 +240,9 @@ class CreateFile extends Component
 
             \App\Models\AuditLog::create([
                 'employee_number' => auth()->user()->employee_number,
-                'action' => $isCopy ? 'file_copy_created' : 'file_registered',
-                'description' => $isCopy
-                    ? 'Created copy of file: '.$this->copyOfFileNo.' as '.$this->new_file_no
+                'action' => $isTj ? 'file_tj_created' : 'file_registered',
+                'description' => $isTj
+                    ? 'Created TJ file: '.$this->tjFileNo.' as '.$this->new_file_no
                     : 'Registered new file: '.$this->new_file_no,
                 'ip_address' => request()->ip(),
                 'user_agent' => request()->userAgent(),
@@ -250,9 +250,9 @@ class CreateFile extends Component
             ]);
 
             $this->toastSuccess(
-                $isCopy ? 'Copy Created' : 'File Registered',
-                $isCopy
-                    ? 'Copy '.$this->new_file_no.' has been created successfully.'
+                $isTj ? 'TJ File Created' : 'File Registered',
+                $isTj
+                    ? 'TJ File '.$this->new_file_no.' has been created successfully.'
                     : 'File No: '.$this->new_file_no.' has been registered successfully.'
             );
 

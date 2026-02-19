@@ -92,9 +92,9 @@
                             <tr class="hover:bg-gray-50 transition-colors">
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                                     {{ $file->getDisplayFileNo() }}
-                                    @if($file->is_copy)
+                                    @if($file->is_tj)
                                     <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-orange-100 text-orange-700">
-                                        Copy {{ $file->copy_number }}
+                                        TJ {{ $file->tj_number }}
                                     </span>
                                     @endif
                                 </td>
@@ -112,7 +112,17 @@
                                     </span>
                                 </td>
                                 <td class="px-6 py-4 text-sm text-gray-700">
-                                    {{ $file->currentHolder?->name ?? 'N/A' }}
+                                    @if($file->currentHolder)
+                                    {{ $file->currentHolder->formal_name }}
+                                    <span class="text-xs text-gray-500 block">
+                                        {{ $file->currentHolder->department }}
+                                        @if($file->currentHolder->unit)
+                                        - {{ $file->currentHolder->unit }}
+                                        @endif
+                                    </span>
+                                    @else
+                                    N/A
+                                    @endif
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm">
                                     <button wire:click="viewDetails({{ $file->id }})"
@@ -133,9 +143,9 @@
                         <div class="flex items-start justify-between mb-2">
                             <div>
                                 <span class="text-sm font-semibold text-gray-900">{{ $file->getDisplayFileNo() }}</span>
-                                @if($file->is_copy)
+                                @if($file->is_tj)
                                     <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-orange-100 text-orange-700">
-                                        Copy {{ $file->copy_number }}
+                                        TJ {{ $file->tj_number }}
                                     </span>
                                 @endif
                             </div>
@@ -149,13 +159,45 @@
                             </span>
                         </div>
                         <p class="text-sm text-gray-600 mb-2">{{ Str::limit($file->subject, 70) }}</p>
-                        <p class="text-xs text-gray-400 mb-3">Holder: {{ $file->currentHolder?->name ?? 'N/A' }}</p>
+                        @if($file->currentHolder)
+                        <p class="text-xs text-gray-400 mb-3">
+                            Holder: {{ $file->currentHolder->formal_name }}
+                            <span class="text-gray-500">
+                                ({{ $file->currentHolder->department }}
+                                @if($file->currentHolder->unit)
+                                - {{ $file->currentHolder->unit }}
+                                @endif
+                                )
+                            </span>
+                        </p>
+                        @else
+                        <p class="text-xs text-gray-400 mb-3">Holder: N/A</p>
+                        @endif
                         <button wire:click="viewDetails({{ $file->id }})"
                                 class="w-full inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-lg text-white bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 shadow-sm transition-all">
                             View Details
                         </button>
                     </div>
                     @endforeach
+                </div>
+            </div>
+            @endif
+
+            <!-- No Results -->
+            @if($searchResults !== null && $searchResults->count() === 0)
+            <div class="bg-white rounded-xl shadow-md mb-4 sm:mb-6 overflow-hidden">
+                <div class="px-6 py-12 text-center">
+                    <svg class="mx-auto h-12 w-12 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    </svg>
+                    <h3 class="mt-3 text-sm font-semibold text-gray-900">No files found</h3>
+                    <p class="mt-1 text-sm text-gray-500">No files matched your search for "<span class="font-medium text-gray-700">{{ $fileNumber }}</span>"</p>
+                    <p class="mt-3 text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded-lg inline-flex items-center px-3 py-1.5">
+                        <svg class="w-4 h-4 mr-1.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        Try removing any extra spaces from your search term.
+                    </p>
                 </div>
             </div>
             @endif
@@ -167,9 +209,9 @@
                     <div>
                         <h3 class="text-base sm:text-lg font-semibold text-gray-900">File Details</h3>
                         <p class="text-sm text-gray-500 mt-1">{{ $selectedFile->getDisplayFileNo() }}</p>
-                        @if($selectedFile->is_copy)
+                        @if($selectedFile->is_tj)
                         <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-orange-100 text-orange-700 mt-1">
-                            Copy {{ $selectedFile->copy_number }} of {{ $selectedFile->original_file_no }}
+                            TJ {{ $selectedFile->tj_number }} of {{ $selectedFile->original_file_no }}
                         </span>
                         @endif
                     </div>
@@ -181,10 +223,10 @@
                     </button>
                 </div>
                 <div class="px-4 sm:px-6 py-4 sm:py-5">
-                    @if($selectedFile->is_copy && $selectedFile->original_file_no)
+                    @if($selectedFile->is_tj && $selectedFile->original_file_no)
                     <div class="mb-4 p-3 bg-orange-50 border border-orange-200 rounded-lg">
                         <p class="text-sm text-blue-700">
-                            <span class="font-medium">This is a copy of:</span>
+                            <span class="font-medium">This is a TJ of:</span>
                             <a href="#" wire:click="fileNumber = '{{ $selectedFile->original_file_no }}'; search()"
                                class="font-medium text-blue-700 hover:underline ml-1">
                                 {{ $selectedFile->original_file_no }}
@@ -249,15 +291,40 @@
                                 <div>
                                     <dt class="text-xs sm:text-sm text-gray-400">Current Holder:</dt>
                                     <dd class="text-sm font-medium text-gray-900">
-                                        {{ $selectedFile->currentHolder?->name ?? 'N/A' }}
+                                        {{ $selectedFile->currentHolder?->formal_name ?? 'N/A' }}
                                         @if($selectedFile->currentHolder)
-                                        <span class="text-xs text-gray-500">({{ $selectedFile->currentHolder->department }})</span>
+                                        <span class="text-xs text-gray-500">
+                                            ({{ $selectedFile->currentHolder->department }}
+                                            @if($selectedFile->currentHolder->unit)
+                                            - {{ $selectedFile->currentHolder->unit }}
+                                            @endif
+                                            )
+                                        </span>
                                         @endif
                                     </dd>
                                 </div>
+                                @if($selectedFile->status === 'in_transit')
+                                <div>
+                                    <dt class="text-xs sm:text-sm text-gray-400">Awaiting Receipt By:</dt>
+                                    <dd class="text-sm font-medium text-orange-700">
+                                        @if($selectedFile->movements->first()?->intendedReceiver)
+                                            {{ $selectedFile->movements->first()->intendedReceiver->formal_name }}
+                                            <span class="text-xs text-gray-500">
+                                                ({{ $selectedFile->movements->first()->intendedReceiver->department }}
+                                                @if($selectedFile->movements->first()->intendedReceiver->unit)
+                                                - {{ $selectedFile->movements->first()->intendedReceiver->unit }}
+                                                @endif
+                                                )
+                                            </span>
+                                        @else
+                                            <span class="text-gray-500">N/A</span>
+                                        @endif
+                                    </dd>
+                                </div>
+                                @endif
                                 <div>
                                     <dt class="text-xs sm:text-sm text-gray-400">Registered By:</dt>
-                                    <dd class="text-sm font-medium text-gray-900">{{ $selectedFile->registeredBy->name }}</dd>
+                                    <dd class="text-sm font-medium text-gray-900">{{ $selectedFile->registeredBy->formal_name }}</dd>
                                 </div>
                                 <div>
                                     <dt class="text-xs sm:text-sm text-gray-400">Date Registered:</dt>
@@ -267,22 +334,22 @@
                         </div>
                     </div>
 
-                    @if($selectedFile->is_copy)
-                    @php $copies = $selectedFile->getCopies() @endphp
-                    @if($copies->count() > 0)
+                    @if($selectedFile->is_tj)
+                    @php $tjFiles = $selectedFile->getTjFiles() @endphp
+                    @if($tjFiles->count() > 0)
                     <div class="mt-6 pt-6 border-t border-gray-200">
-                        <h4 class="text-sm font-medium text-gray-500 mb-3">Other Copies of This File</h4>
+                        <h4 class="text-sm font-medium text-gray-500 mb-3">Other TJ Files of This File</h4>
                         <div class="bg-gray-50 rounded-lg p-3">
                             <ul class="divide-y divide-gray-200">
-                                @foreach($copies as $copy)
+                                @foreach($tjFiles as $tjFile)
                                 <li class="py-2 flex items-center justify-between">
                                     <div>
-                                        <span class="text-sm font-medium text-gray-900">{{ $copy->new_file_no }}</span>
+                                        <span class="text-sm font-medium text-gray-900">{{ $tjFile->new_file_no }}</span>
                                         <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-orange-100 text-orange-700">
-                                            Copy {{ $copy->copy_number }}
+                                            TJ {{ $tjFile->tj_number }}
                                         </span>
                                     </div>
-                                    <span class="text-xs text-gray-500">{{ ucfirst($copy->status) }}</span>
+                                    <span class="text-xs text-gray-500">{{ ucfirst($tjFile->status) }}</span>
                                 </li>
                                 @endforeach
                             </ul>
@@ -336,15 +403,15 @@
                                             <div class="flex flex-col sm:flex-row sm:justify-between sm:space-x-4">
                                                 <div class="flex-1">
                                                     <p class="text-sm text-gray-700">
-                                                        <span class="font-medium text-gray-900">{{ $movement->sender->name ?? 'Unknown' }}</span> sent to
-                                                        <span class="font-medium text-gray-900">{{ $movement->intendedReceiver->name ?? 'Unknown' }}</span>
+                                                        <span class="font-medium text-gray-900">{{ $movement->sender->formal_name ?? 'Unknown' }}</span> sent to
+                                                        <span class="font-medium text-gray-900">{{ $movement->intendedReceiver->formal_name ?? 'Unknown' }}</span>
                                                     </p>
                                                     <p class="text-xs text-gray-500 mt-1">
                                                         {{ $movement->sender->positionTitle ?? 'N/A' }} &rarr; {{ $movement->intendedReceiver->positionTitle ?? 'N/A' }}
                                                     </p>
                                                     @if($movement->movement_status === 'received')
                                                     <p class="text-xs text-green-600 mt-1">
-                                                        &#10003; Received by {{ $movement->actualReceiver->name ?? 'Unknown' }} on {{ $movement->received_at->format('d M Y, h:i A') }}
+                                                        &#10003; Received by {{ $movement->actualReceiver->formal_name ?? 'Unknown' }} on {{ $movement->received_at->format('d M Y, h:i A') }}
                                                     </p>
                                                     @endif
                                                     @if($movement->sender_comments)

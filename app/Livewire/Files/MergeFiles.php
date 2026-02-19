@@ -100,37 +100,44 @@ class MergeFiles extends Component
             return;
         }
 
-        $mergedFileNumbers = $copies->pluck('new_file_no')->toArray();
+        try {
+            $mergedFileNumbers = $copies->pluck('new_file_no')->toArray();
 
-        foreach ($copies as $copy) {
-            $copy->movements()->update(['file_id' => $this->originalFile->id]);
-            $copy->attachments()->update(['file_id' => $this->originalFile->id]);
-            $copy->forceDelete();
+            foreach ($copies as $copy) {
+                $copy->movements()->update(['file_id' => $this->originalFile->id]);
+                $copy->attachments()->update(['file_id' => $this->originalFile->id]);
+                $copy->forceDelete();
+            }
+
+            $existingMergedFiles = $this->originalFile->merged_file_numbers ?? [];
+            $this->originalFile->update([
+                'merged_file_numbers' => array_merge($existingMergedFiles, $mergedFileNumbers),
+            ]);
+
+            AuditLog::create([
+                'employee_number' => Auth::user()->employee_number,
+                'action' => 'files_merged',
+                'description' => 'Merged and deleted copies ' . implode(', ', $mergedFileNumbers) . ' into ' . $this->originalFile->new_file_no,
+                'ip_address' => request()->ip(),
+                'user_agent' => request()->userAgent(),
+                'new_data' => [
+                    'original_file_id' => $this->originalFile->id,
+                    'original_file_no' => $this->originalFile->new_file_no,
+                    'merged_file_ids' => $this->selectedCopies,
+                    'merged_file_numbers' => $mergedFileNumbers,
+                ],
+            ]);
+
+            $this->isMerging = false;
+            $this->toastSuccess('Files Merged', count($copies) . ' copy/copies merged and deleted. Original file: ' . $this->originalFile->new_file_no);
+
+            $this->reset(['originalFileNo', 'originalFile', 'selectedCopies', 'showMergeModal']);
+        } catch (\Exception $e) {
+            $this->isMerging = false;
+            $this->showMergeModal = false;
+            report($e);
+            $this->toastError('Merge Failed', 'Something went wrong while merging files. Please try again.');
         }
-
-        $existingMergedFiles = $this->originalFile->merged_file_numbers ?? [];
-        $this->originalFile->update([
-            'merged_file_numbers' => array_merge($existingMergedFiles, $mergedFileNumbers),
-        ]);
-
-        AuditLog::create([
-            'employee_number' => Auth::user()->employee_number,
-            'action' => 'files_merged',
-            'description' => 'Merged and deleted copies ' . implode(', ', $mergedFileNumbers) . ' into ' . $this->originalFile->new_file_no,
-            'ip_address' => request()->ip(),
-            'user_agent' => request()->userAgent(),
-            'new_data' => [
-                'original_file_id' => $this->originalFile->id,
-                'original_file_no' => $this->originalFile->new_file_no,
-                'merged_file_ids' => $this->selectedCopies,
-                'merged_file_numbers' => $mergedFileNumbers,
-            ],
-        ]);
-
-        $this->isMerging = false;
-        $this->toastSuccess('Files Merged', count($copies) . ' copy/copies merged and deleted. Original file: ' . $this->originalFile->new_file_no);
-
-        $this->reset(['originalFileNo', 'originalFile', 'selectedCopies', 'showMergeModal']);
     }
 
     public function getCopies()
@@ -141,12 +148,12 @@ class MergeFiles extends Component
 
         return File::where('original_file_no', $this->originalFile->new_file_no)
             ->orWhere(function ($query) {
-                $query->where('new_file_no', 'like', $this->originalFile->new_file_no . '-copy%')
-                      ->where('is_copy', true);
+                $query->where('new_file_no', 'like', $this->originalFile->new_file_no . '-tj%')
+                      ->where('is_tj', true);
             })
             ->where('id', '!=', $this->originalFile->id)
             ->whereIn('status', ['completed', 'at_registry'])
-            ->orderBy('copy_number')
+            ->orderBy('tj_number')
             ->get();
     }
 

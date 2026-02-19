@@ -11,6 +11,7 @@ class EditFile extends Component
 {
     use WithToast;
     public File $file;
+    public $showDeleteModal = false;
 
     public $subject;
     public $file_title;
@@ -58,37 +59,84 @@ class EditFile extends Component
     {
         $this->validate();
 
-        $this->file->update([
-            'subject' => $this->subject,
-            'file_title' => $this->file_title,
-            'old_file_no' => $this->old_file_no,
-            'new_file_no' => $this->new_file_no,
-            'priority' => $this->priority,
-            'status' => $this->status,
-            'confidentiality' => $this->confidentiality,
-            'remarks' => $this->remarks,
-            'due_date' => $this->due_date,
-            'current_holder' => $this->current_holder,
-        ]);
+        try {
+            $this->file->update([
+                'subject' => $this->subject,
+                'file_title' => $this->file_title,
+                'old_file_no' => $this->old_file_no,
+                'new_file_no' => $this->new_file_no,
+                'priority' => $this->priority,
+                'status' => $this->status,
+                'confidentiality' => $this->confidentiality,
+                'remarks' => $this->remarks,
+                'due_date' => $this->due_date,
+                'current_holder' => $this->current_holder,
+            ]);
 
-        $this->toastSuccess('File Updated', 'File ' . $this->new_file_no . ' has been updated successfully.');
+            $this->toastSuccess('File Updated', 'File ' . $this->new_file_no . ' has been updated successfully.');
 
-        return redirect()->route('files.show', $this->file);
+            return redirect()->route('files.show', $this->file);
+        } catch (\Exception $e) {
+            report($e);
+            $this->toastError('Update Failed', 'Something went wrong while updating the file. Please try again.');
+        }
     }
 
     public function deleteFile()
     {
-        $fileNo = $this->file->new_file_no;
+        try {
+            $fileNo = $this->file->new_file_no;
 
-        // Delete all movements first
-        $this->file->movements()->delete();
+            $tjFiles = File::where('original_file_no', $this->file->new_file_no)
+                ->orWhere('new_file_no', 'like', $this->file->new_file_no . '-tj%')
+                ->get();
 
-        // Delete the file
-        $this->file->delete();
+            $tjCount = $tjFiles->count();
 
-        $this->toastSuccess('File Deleted', "File {$fileNo} has been deleted successfully.");
+            foreach ($tjFiles as $tjFile) {
+                $tjFile->movements()->delete();
+                $tjFile->forceDelete();
+            }
 
-        return redirect()->route('registry.dashboard');
+            $this->file->movements()->delete();
+            $this->file->delete();
+
+            $message = "File {$fileNo} has been deleted successfully.";
+            if ($tjCount > 0) {
+                $message .= " Also deleted {$tjCount} TJ file(s) associated with this file.";
+            }
+
+            $this->toastSuccess('File Deleted', $message);
+
+            return redirect()->route('registry.dashboard');
+        } catch (\Exception $e) {
+            report($e);
+            $this->toastError('Delete Failed', 'Something went wrong while deleting the file. Please try again.');
+        }
+    }
+
+    public function openDeleteModal()
+    {
+        $this->showDeleteModal = true;
+    }
+
+    public function closeDeleteModal()
+    {
+        $this->showDeleteModal = false;
+    }
+
+    public function getTjFilesCount()
+    {
+        return File::where('original_file_no', $this->file->new_file_no)
+            ->orWhere('new_file_no', 'like', $this->file->new_file_no . '-tj%')
+            ->count();
+    }
+
+    public function getTjFiles()
+    {
+        return File::where('original_file_no', $this->file->new_file_no)
+            ->orWhere('new_file_no', 'like', $this->file->new_file_no . '-tj%')
+            ->get();
     }
 
     public function render()

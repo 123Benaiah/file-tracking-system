@@ -5,15 +5,10 @@
             <div class="p-4 sm:p-6 flex items-center justify-between">
                 <div>
                     <h2 class="text-xl sm:text-2xl font-bold text-gray-900">Received Files</h2>
-                    <p class="text-gray-500 mt-1 text-sm sm:text-base">History of files you have received</p>
+                    <p class="text-gray-500 mt-1 text-sm sm:text-base">Files you currently hold</p>
                 </div>
                 <div class="flex items-center gap-3">
-                    <a href="{{ route('files.create') }}" wire:navigate class="inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg text-white bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 shadow-sm transition-all">
-                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                        </svg>
-                        Send File
-                    </a>
+                 
                     <div class="hidden sm:block">
                         <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center shadow-lg shadow-green-500/20">
                             <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -55,7 +50,7 @@
                 </svg>
                 <div>
                     <h3 class="text-base sm:text-lg font-semibold text-gray-800">Received Files</h3>
-                    <p class="text-xs sm:text-sm text-gray-500 hidden sm:block">Files you have confirmed receipt</p>
+                    <p class="text-xs sm:text-sm text-gray-500 hidden sm:block">Files you currently hold</p>
                 </div>
             </div>
 
@@ -82,7 +77,7 @@
                                 <div class="text-xs text-gray-500">{{ Str::limit($movement->file->file_title, 40) }}</div>
                             </td>
                             <td class="px-6 py-4 text-sm text-gray-700">
-                                <div class="text-gray-900 font-medium">{{ $movement->sender->name ?? 'Unknown' }}</div>
+                                <div class="text-gray-900 font-medium">{{ $movement->sender->formal_name ?? 'Unknown' }}</div>
                                 <div class="text-xs text-gray-500">{{ $movement->sender->departmentRel?->name ?? ($movement->sender->unitRel?->department?->name ?? 'N/A') }}</div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">

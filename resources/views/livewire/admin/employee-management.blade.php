@@ -93,7 +93,7 @@
                                             <span class="text-sm font-medium text-gray-600">{{ substr($employee->name, 0, 2) }}</span>
                                         </div>
                                         <div class="ml-4">
-                                            <div class="text-sm font-medium text-gray-900">{{ $employee->name }}</div>
+                                            <div class="text-sm font-medium text-gray-900">{{ $employee->formal_name }}</div>
                                             <div class="text-sm text-gray-500">{{ $employee->employee_number }}</div>
                                         </div>
                                     </div>
@@ -183,7 +183,7 @@
             <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
                 <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" wire:click="closeModal"></div>
                 <span class="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
-                <div class="inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full" x-data="{ activeTab: 'details' }">
+                <div class="inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full" x-data="{ activeTab: 'details' }" @go-to-security.window="activeTab = 'security'">
                     <form wire:submit.prevent="save">
                         <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                             <h3 class="text-lg font-semibold text-gray-900 mb-4" id="modal-title">
@@ -201,7 +201,7 @@
                                         </svg>
                                         Details
                                     </button>
-                                    <button type="button" @click="activeTab = 'security'"
+                                    <button type="button" @click="if(activeTab !== 'security') { $wire.switchToSecurityTab() }"
                                             :class="activeTab === 'security' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
                                             class="pb-3 px-1 border-b-2 font-medium text-sm transition-colors flex items-center gap-1.5">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -217,8 +217,8 @@
                                 <div class="grid grid-cols-2 gap-4">
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-1">Employee ID *</label>
-                                        <input type="text" wire:model.live="employee_number" {{ $editMode ? 'readonly' : '' }}
-                                               class="w-full border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-500 {{ $editMode ? 'bg-gray-100' : '' }}">
+                                        <input type="text" wire:model.live="employee_number"
+                                               class="w-full border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-500">
                                         @error('employee_number') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                                     </div>
                                     <div>
@@ -236,6 +236,17 @@
                                         @error('email') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                                     </div>
                                     <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Gender</label>
+                                        <select wire:model.live="gender" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                            <option value="">Select Gender</option>
+                                            <option value="male" @selected($gender === 'male')>Male</option>
+                                            <option value="female" @selected($gender === 'female')>Female</option>
+                                        </select>
+                                        @error('gender') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-1">Role *</label>
                                         <select wire:model.live="role" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-500">
                                             <option value="user" @selected($role === 'user')>User</option>
@@ -243,8 +254,6 @@
                                         </select>
                                         @error('role') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                                     </div>
-                                </div>
-                                <div class="grid grid-cols-2 gap-4">
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-1">Department</label>
                                         <select wire:model.live="department_id" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-500">
@@ -255,16 +264,16 @@
                                         </select>
                                         @error('department_id') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                                     </div>
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-1">Unit</label>
-                                        <select wire:model.live="unit_id" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                                @if($units->isEmpty()) disabled @endif>
-                                            <option value="">{{ $units->isEmpty() ? ($department_id ? 'No units available' : 'Select department first') : 'Select Unit' }}</option>
-                                            @foreach($units as $id => $unitName)
-                                                <option value="{{ $id }}" @selected($unit_id == $id)>{{ $unitName }}</option>
-                                            @endforeach
-                                        </select>
-                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Unit</label>
+                                    <select wire:model.live="unit_id" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                            @if($units->isEmpty()) disabled @endif>
+                                        <option value="">{{ $units->isEmpty() ? ($department_id ? 'No units available' : 'Select department first') : 'Select Unit' }}</option>
+                                        @foreach($units as $id => $unitName)
+                                            <option value="{{ $id }}" @selected($unit_id == $id)>{{ $unitName }}</option>
+                                        @endforeach
+                                    </select>
                                 </div>
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-1">Position</label>
@@ -294,7 +303,7 @@
                                         @php
                                             $existingHead = $existingRegistryHead ?? null;
                                             $isHeadDisabled = $existingHead && (!$is_registry_head);
-                                            $headTooltip = $existingHead ? 'Another active employee ("' . $existingHead->name . '") is already the Registry Head' : '';
+                                            $headTooltip = $existingHead ? 'Another active employee ("' . $existingHead->formal_name . '") is already the Registry Head' : '';
                                         @endphp
                                         <div class="flex items-center {{ $isHeadDisabled ? 'opacity-60' : '' }}">
                                             <input type="checkbox" wire:model.live="is_registry_head" id="is_registry_head"
@@ -352,7 +361,28 @@
                             </div>
                         </div>
                         <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse gap-2">
-                            <button type="submit" wire:loading.attr="disabled"
+                            <!-- Details tab: Next button (validates before going to security) -->
+                            <button x-show="activeTab === 'details'" type="button" wire:click="switchToSecurityTab"
+                                    wire:loading.attr="disabled"
+                                    wire:target="switchToSecurityTab"
+                                    class="w-full inline-flex justify-center rounded-lg border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:w-auto sm:text-sm disabled:opacity-75">
+                                <span wire:loading.remove wire:target="switchToSecurityTab">
+                                    Next
+                                    <svg class="w-4 h-4 ml-1.5 mt-0.5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                    </svg>
+                                </span>
+                                <span wire:loading wire:target="switchToSecurityTab" class="flex items-center gap-2">
+                                    <svg class="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                    Verifying...
+                                </span>
+                            </button>
+
+                            <!-- Security tab: Submit button -->
+                            <button x-show="activeTab === 'security'" x-cloak type="submit" wire:loading.attr="disabled"
                                     class="w-full inline-flex justify-center rounded-lg border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:w-auto sm:text-sm disabled:opacity-75">
                                 <span wire:loading.remove wire:target="save">
                                     {{ $editMode ? 'Update' : 'Create' }}
@@ -365,6 +395,17 @@
                                     {{ $editMode ? 'Updating...' : 'Creating...' }}
                                 </span>
                             </button>
+
+                            <!-- Security tab: Back button -->
+                            <button x-show="activeTab === 'security'" x-cloak type="button" @click="activeTab = 'details'"
+                                    class="mt-3 w-full inline-flex justify-center rounded-lg border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:w-auto sm:text-sm">
+                                <svg class="w-4 h-4 mr-1.5 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                                </svg>
+                                Back
+                            </button>
+
+                            <!-- Cancel button (always visible) -->
                             <button type="button" wire:click="closeModal"
                                     class="mt-3 w-full inline-flex justify-center rounded-lg border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:w-auto sm:text-sm">
                                 Cancel

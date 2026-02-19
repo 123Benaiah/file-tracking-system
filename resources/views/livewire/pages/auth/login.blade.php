@@ -24,7 +24,7 @@ new #[Layout('layouts.guest')] class extends Component
     }
 }; ?>
 
-<div class="w-full max-w-xs mx-auto">
+<div class="w-full max-w-[260px] sm:max-w-xs mx-auto">
     <!-- Session Status -->
     <x-auth-session-status class="mb-4" :status="session('status')" />
 
@@ -32,15 +32,15 @@ new #[Layout('layouts.guest')] class extends Component
         <!-- Employee Number -->
         <div>
             <x-input-label for="employee_number" :value="__('Employee Number')" class="text-gray-700 font-semibold text-sm" />
-            <x-text-input wire:model="form.employee_number" id="employee_number" class="block mt-1 w-full border-gray-300 focus:border-green-500 focus:ring-green-500 rounded-lg text-sm" type="text" name="employee_number" required autofocus autocomplete="username" placeholder="e.g., REGHEAD001" />
+            <x-text-input wire:model="form.employee_number" id="employee_number" class="block mt-1 w-full border-gray-300 focus:border-green-500 focus:ring-green-500 rounded-lg text-sm py-2.5 sm:py-1.5" type="text" name="employee_number" required autofocus autocomplete="username" placeholder="e.g., REGHEAD001" />
             <x-input-error :messages="$errors->get('form.employee_number')" class="mt-2" />
         </div>
 
         <!-- Password -->
-        <div class="mt-4">
+        <div class="mt-3 sm:mt-4">
             <x-input-label for="password" :value="__('Password')" class="text-gray-700 font-semibold text-sm" />
 
-            <x-text-input wire:model="form.password" id="password" class="block mt-1 w-full border-gray-300 focus:border-green-500 focus:ring-green-500 rounded-lg text-sm"
+            <x-text-input wire:model="form.password" id="password" class="block mt-1 w-full border-gray-300 focus:border-green-500 focus:ring-green-500 rounded-lg text-sm py-2.5 sm:py-1.5"
                             type="password"
                             name="password"
                             required autocomplete="current-password" />
@@ -49,14 +49,14 @@ new #[Layout('layouts.guest')] class extends Component
         </div>
 
         <!-- Remember Me -->
-        <div class="block mt-4">
+        <div class="block mt-3 sm:mt-4">
             <label for="remember" class="inline-flex items-center">
                 <input wire:model="form.remember" id="remember" type="checkbox" class="rounded border-gray-300 text-green-600 shadow-sm focus:ring-green-500" name="remember">
                 <span class="ms-2 text-sm text-gray-600">{{ __('Remember me') }}</span>
             </label>
         </div>
 
-        <div class="flex flex-col sm:flex-row items-center justify-between mt-6 gap-3">
+        <div class="flex flex-col sm:flex-row items-center justify-between mt-5 sm:mt-6 gap-3">
             @if (Route::has('password.request'))
                 <a class="text-sm text-orange-600 hover:text-orange-800 font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500" href="{{ route('password.request') }}" wire:navigate>
                     {{ __('Forgot password?') }}

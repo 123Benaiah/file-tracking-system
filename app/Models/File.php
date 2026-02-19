@@ -16,8 +16,8 @@ class File extends Model
         'old_file_no',
         'new_file_no',
         'original_file_no',
-        'is_copy',
-        'copy_number',
+        'is_tj',
+        'tj_number',
         'priority',
         'status',
         'confidentiality',
@@ -90,7 +90,7 @@ class File extends Model
     public function scopeOverdue($query)
     {
         return $query->where('due_date', '<', now())
-            ->whereNotIn('status', ['archived']);
+            ->whereNotIn('status', ['completed', 'archived', 'merged', 'returned_to_registry']);
     }
 
     public function scopeInDepartment($query, $department)
@@ -104,12 +104,12 @@ class File extends Model
 
     public function scopeOriginal($query)
     {
-        return $query->where('is_copy', false);
+        return $query->where('is_tj', false);
     }
 
-    public function scopeCopies($query)
+    public function scopeTjFiles($query)
     {
-        return $query->where('is_copy', true);
+        return $query->where('is_tj', true);
     }
 
     public function scopeOfOriginal($query, $originalFileNo)
@@ -180,7 +180,7 @@ class File extends Model
     {
         return $this->due_date
             && $this->due_date->isPast()
-            && ! in_array($this->status, ['completed', 'archived']);
+            && ! in_array($this->status, ['completed', 'archived', 'merged', 'returned_to_registry']);
     }
 
     public function getDaysOverdue()
@@ -194,42 +194,42 @@ class File extends Model
 
     public function getDisplayFileNo()
     {
-        if ($this->is_copy && $this->copy_number) {
-            return $this->original_file_no.'-copy'.$this->copy_number;
+        if ($this->is_tj && $this->tj_number) {
+            return $this->original_file_no.'-tj'.$this->tj_number;
         }
 
         return $this->new_file_no;
     }
 
-    public function getCopies()
+    public function getTjFiles()
     {
         return static::where('original_file_no', $this->new_file_no)
-            ->where('is_copy', true)
-            ->orderBy('copy_number')
+            ->where('is_tj', true)
+            ->orderBy('tj_number')
             ->get();
     }
 
-    public function getNextCopyNumber()
+    public function getNextTjNumber()
     {
-        $maxCopy = static::where(function ($query) {
+        $maxTj = static::where(function ($query) {
                 $query->where('original_file_no', $this->new_file_no)
-                      ->orWhere('new_file_no', 'like', $this->new_file_no . '-copy%');
+                      ->orWhere('new_file_no', 'like', $this->new_file_no . '-tj%');
             })
             ->withTrashed()
-            ->max('copy_number');
+            ->max('tj_number');
 
-        return ($maxCopy ?? 0) + 1;
+        return ($maxTj ?? 0) + 1;
     }
 
-    public static function generateCopyFileNo($originalFileNo)
+    public static function generateTjFileNo($originalFileNo)
     {
         $file = static::where('new_file_no', $originalFileNo)->first();
         if (! $file) {
             return null;
         }
-        $nextCopyNumber = $file->getNextCopyNumber();
+        $nextTjNumber = $file->getNextTjNumber();
 
-        return $originalFileNo.'-copy'.$nextCopyNumber;
+        return $originalFileNo.'-tj'.$nextTjNumber;
     }
 
     public function canBeSentBy(Employee $employee)

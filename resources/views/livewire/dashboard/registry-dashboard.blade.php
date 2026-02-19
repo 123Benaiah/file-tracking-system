@@ -90,7 +90,7 @@
                             </div>
                             <p class="text-sm text-gray-500 mt-1">{{ Str::limit($movement->file->subject, 60) }}</p>
                             <p class="text-xs text-gray-400 mt-1">
-                                From: {{ $movement->sender->name ?? 'Unknown' }}
+                                From: {{ $movement->sender->formal_name ?? 'Unknown' }}
                                 <span class="hidden sm:inline">({{ $movement->sender->departmentRel?->name ?? ($movement->sender->unitRel?->department?->name ?? 'N/A') }})</span>
                                 <span class="sm:hidden block">{{ $movement->sent_at->format('d M Y') }}</span>
                                 <span class="hidden sm:inline">| Sent: {{ $movement->sent_at->format('d M Y, h:i A') }}</span>
@@ -154,7 +154,7 @@
                             </div>
                             <p class="text-sm text-gray-500 mt-1">{{ Str::limit($movement->file->subject, 60) }}</p>
                             <p class="text-xs text-gray-400 mt-1">
-                                From: {{ $movement->sender->name ?? 'Unknown' }}
+                                From: {{ $movement->sender->formal_name ?? 'Unknown' }}
                                 <span class="hidden sm:inline">({{ $movement->sender->departmentRel?->name ?? ($movement->sender->unitRel?->department?->name ?? 'N/A') }})</span>
                                 <span class="hidden sm:inline">| Received: {{ $movement->received_at->format('d M Y, h:i A') }}</span>
                             </p>
@@ -178,7 +178,7 @@
 
         <!-- Sent Files Pending Confirmation -->
         @if($sentPendingConfirmation->count() > 0)
-        <div class="bg-white rounded-xl shadow-md mb-4 sm:mb-6 overflow-hidden">
+        <div id="sent-pending" class="bg-white rounded-xl shadow-md mb-4 sm:mb-6 overflow-hidden">
             <div class="px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-100 flex items-center cursor-pointer hover:bg-gray-50 transition-colors" @click="showSentPending = !showSentPending">
                 <svg class="w-5 h-5 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
@@ -209,13 +209,20 @@
                             </div>
                             <p class="text-sm text-gray-500 mt-1">{{ Str::limit($movement->file->subject, 60) }}</p>
                             <p class="text-xs text-gray-400 mt-1">
-                                To: {{ $movement->intendedReceiver->name ?? 'Unknown' }}
+                                To: {{ $movement->intendedReceiver->formal_name ?? 'Unknown' }}
                                 <span class="hidden sm:inline">({{ $movement->intendedReceiver->departmentRel?->name ?? ($movement->intendedReceiver->unitRel?->department?->name ?? '') }})</span>
                                 <span class="sm:hidden block">{{ $movement->sent_at->format('d M Y') }}</span>
                                 <span class="hidden sm:inline">| Sent: {{ $movement->sent_at->format('d M Y, h:i A') }}</span>
                             </p>
                         </div>
-                        <div class="flex-shrink-0">
+                        <div class="flex-shrink-0 flex items-center gap-2">
+                            <a href="{{ route('files.change-recipient', $movement->id) }}" 
+                               class="inline-flex items-center px-3 py-2 sm:py-1.5 text-xs font-medium rounded-lg text-blue-700 bg-blue-50 hover:bg-blue-100">
+                                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                </svg>
+                                Change
+                            </a>
                             <span class="inline-flex items-center px-3 py-2 sm:py-1.5 text-xs font-medium rounded-lg text-orange-700 bg-orange-50">
                                 <svg class="w-4 h-4 sm:w-3 sm:h-3 mr-1 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
@@ -443,11 +450,11 @@
                             </td>
                             <td class="px-6 py-4">
                                 @if($file->currentHolder)
-                                <div class="text-sm text-gray-900 font-medium">{{ $file->currentHolder->name }}</div>
+                                <div class="text-sm text-gray-900 font-medium">{{ $file->currentHolder->formal_name }}</div>
                                 <div class="text-sm text-gray-500">{{ $file->currentHolder->departmentRel?->name ?? ($file->currentHolder->unitRel?->department?->name ?? 'N/A') }}</div>
                                 @elseif($file->latestMovement)
                                 <div class="text-sm text-orange-600 font-medium">Awaiting Receipt by:</div>
-                                <div class="text-sm text-gray-500">{{ $file->latestMovement->intendedReceiver->name ?? 'N/A' }}</div>
+                                <div class="text-sm text-gray-500">{{ $file->latestMovement->intendedReceiver->formal_name ?? 'N/A' }}</div>
                                 @else
                                 <span class="text-sm text-gray-400">Not assigned</span>
                                 @endif
@@ -586,7 +593,7 @@
                             <span class="text-gray-500">Holder:</span>
                             <p class="font-medium text-gray-900">
                                 @if($file->currentHolder)
-                                    {{ $file->currentHolder->name }}
+                                    {{ $file->currentHolder->formal_name }}
                                 @elseif($file->latestMovement)
                                     <span class="text-orange-600">Awaiting Receipt</span>
                                 @else

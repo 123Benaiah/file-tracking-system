@@ -23,7 +23,7 @@ class CheckRegistryHead
 
         if (!$user->is_registry_head && !$user->isRegistryHead()) {
             return redirect()->route('dashboard')
-                ->with('error', 'Access denied. Only Registry Head can perform this action.');
+                ->with('toast', ['type' => 'error', 'title' => 'Access Denied', 'message' => 'Only the Registry Head can perform this action.']);
         }
 
         return $next($request);

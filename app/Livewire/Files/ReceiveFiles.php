@@ -24,9 +24,17 @@ class ReceiveFiles extends Component
     {
         $user = auth()->user();
 
-        // Received files with pagination (files you have already received)
-        $receivedFiles = FileMovement::where('actual_receiver_emp_no', $user->employee_number)
+        // Received files with pagination — only the latest movement per file you currently hold
+        $latestMovementIds = FileMovement::where('actual_receiver_emp_no', $user->employee_number)
             ->where('movement_status', 'received')
+            ->whereHas('file', function ($q) use ($user) {
+                $q->where('current_holder', $user->employee_number);
+            })
+            ->selectRaw('MAX(id) as id')
+            ->groupBy('file_id')
+            ->pluck('id');
+
+        $receivedFiles = FileMovement::whereIn('id', $latestMovementIds)
             ->when($this->search, function ($query) {
                 $query->whereHas('file', function ($q) {
                     $q->where('subject', 'like', '%'.$this->search.'%')

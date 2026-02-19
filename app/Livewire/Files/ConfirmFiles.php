@@ -22,57 +22,63 @@ class ConfirmFiles extends Component
     public function confirmReceipt($movementId)
     {
         $this->confirmingIds[] = $movementId;
-        
-        $movement = FileMovement::with('file')->find($movementId);
 
-        if (!$movement) {
+        try {
+            $movement = FileMovement::with('file')->find($movementId);
+
+            if (!$movement) {
+                $this->confirmingIds = array_diff($this->confirmingIds, [$movementId]);
+                $this->toastError('Not Found', 'File movement not found.');
+                return;
+            }
+
+            $user = auth()->user();
+            if ($movement->intended_receiver_emp_no !== $user->employee_number) {
+                $this->confirmingIds = array_diff($this->confirmingIds, [$movementId]);
+                $this->toastError('Unauthorized', 'You are not authorized to receive this file.');
+                return;
+            }
+
+            $movement->update([
+                'actual_receiver_emp_no' => $user->employee_number,
+                'received_at' => now(),
+                'movement_status' => 'received',
+            ]);
+
+            $isReturningToRegistry = $user->isRegistryStaff();
+
+            $movement->file->update([
+                'status' => $isReturningToRegistry ? 'completed' : 'received',
+                'current_holder' => $user->employee_number,
+            ]);
+
+            \App\Models\AuditLog::create([
+                'employee_number' => $user->employee_number,
+                'action' => $isReturningToRegistry ? 'file_returned_to_registry' : 'file_received',
+                'description' => $isReturningToRegistry
+                    ? 'Returned file '.$movement->file->new_file_no.' to registry'
+                    : 'Received file '.$movement->file->new_file_no.' from '.$movement->sender_emp_no,
+                'ip_address' => request()->ip(),
+                'user_agent' => request()->userAgent(),
+                'new_data' => $movement->fresh()->toArray(),
+            ]);
+
             $this->confirmingIds = array_diff($this->confirmingIds, [$movementId]);
-            $this->toastError('Not Found', 'File movement not found.');
-            return;
-        }
 
-        $user = auth()->user();
-        if ($movement->intended_receiver_emp_no !== $user->employee_number) {
+            $this->toastSuccess(
+                $isReturningToRegistry ? 'File Returned to Registry' : 'File Received',
+                $isReturningToRegistry
+                    ? 'File "'.$movement->file->new_file_no.'" has been returned to registry and marked as completed.'
+                    : 'File "'.$movement->file->new_file_no.'" has been received successfully.'
+            );
+
+            $this->dispatch('receipt-confirmed')->self();
+            return $this->redirect(route('files.receive'), navigate: true);
+        } catch (\Exception $e) {
             $this->confirmingIds = array_diff($this->confirmingIds, [$movementId]);
-            $this->toastError('Unauthorized', 'You are not authorized to receive this file.');
-            return;
+            report($e);
+            $this->toastError('Confirmation Failed', 'Something went wrong while confirming receipt. Please try again.');
         }
-
-        $movement->update([
-            'actual_receiver_emp_no' => $user->employee_number,
-            'received_at' => now(),
-            'movement_status' => 'received',
-        ]);
-
-        $isReturningToRegistry = $user->isRegistryStaff();
-
-        $movement->file->update([
-            'status' => $isReturningToRegistry ? 'completed' : 'received',
-            'current_holder' => $user->employee_number,
-        ]);
-
-        \App\Models\AuditLog::create([
-            'employee_number' => $user->employee_number,
-            'action' => $isReturningToRegistry ? 'file_returned_to_registry' : 'file_received',
-            'description' => $isReturningToRegistry
-                ? 'Returned file '.$movement->file->new_file_no.' to registry'
-                : 'Received file '.$movement->file->new_file_no.' from '.$movement->sender_emp_no,
-            'ip_address' => request()->ip(),
-            'user_agent' => request()->userAgent(),
-            'new_data' => $movement->fresh()->toArray(),
-        ]);
-
-        $this->confirmingIds = array_diff($this->confirmingIds, [$movementId]);
-        
-        $this->toastSuccess(
-            $isReturningToRegistry ? 'File Returned to Registry' : 'File Received',
-            $isReturningToRegistry
-                ? 'File "'.$movement->file->new_file_no.'" has been returned to registry and marked as completed.'
-                : 'File "'.$movement->file->new_file_no.'" has been received successfully.'
-        );
-
-        $this->dispatch('receipt-confirmed')->self();
-        return $this->redirect(route('files.confirm'), navigate: true);
     }
 
     public function render()

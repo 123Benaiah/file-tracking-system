@@ -39,18 +39,18 @@
             <div class="absolute top-0 right-0 w-96 h-96 bg-orange-500 rounded-full filter blur-3xl opacity-20 -translate-y-1/2 translate-x-1/2"></div>
             <div class="absolute bottom-0 left-0 w-72 h-72 bg-red-500 rounded-full filter blur-3xl opacity-15 translate-y-1/2 -translate-x-1/2"></div>
 
-            <div class="relative z-10 w-full max-w-md sm:max-w-2xl">
+            <div class="relative z-10 w-full max-w-[360px] sm:max-w-2xl">
                 <!-- Unified Card -->
-                <div class="bg-white rounded-xl sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col sm:flex-row">
+                <div class="bg-white rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col sm:flex-row">
                     <!-- Left Side - Branding -->
-                    <div class="sm:w-1/2 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 p-4 sm:p-8 flex flex-col justify-center">
+                    <div class="sm:w-1/2 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 p-5 sm:p-8 flex flex-col justify-center">
                         <!-- Title on top - smaller on mobile -->
                         <div class="text-center mb-3 sm:mb-4">
-                            <h1 class="text-xl sm:text-2xl font-bold text-white">File Tracking System</h1>
+                            <h1 class="text-lg sm:text-2xl font-bold text-white">File Tracking System</h1>
                         </div>
 
                         <!-- Lottie Animation -->
-                        <div class="w-full max-w-[80px] sm:max-w-[120px] mx-auto h-20 sm:h-[120px]">
+                        <div class="w-full max-w-[70px] sm:max-w-[120px] mx-auto h-16 sm:h-[120px]">
                             <lottie-player
                                 src="/search.json"
                                 background="transparent"
@@ -68,48 +68,21 @@
                             </p>
                         </div>
 
-                        <!-- Features -->
-                        <div class="mt-6 grid grid-cols-3 gap-2 text-center">
-                            <div class="text-white">
-                                <div class="w-8 h-8 bg-orange-500/30 rounded-lg flex items-center justify-center mx-auto mb-1">
-                                    <svg class="w-4 h-4 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                                    </svg>
-                                </div>
-                                <p class="text-xs font-medium text-gray-300">Track</p>
-                            </div>
-                            <div class="text-white">
-                                <div class="w-8 h-8 bg-green-500/30 rounded-lg flex items-center justify-center mx-auto mb-1">
-                                    <svg class="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
-                                    </svg>
-                                </div>
-                                <p class="text-xs font-medium text-gray-300">Send</p>
-                            </div>
-                            <div class="text-white">
-                                <div class="w-8 h-8 bg-red-500/30 rounded-lg flex items-center justify-center mx-auto mb-1">
-                                    <svg class="w-4 h-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
-                                    </svg>
-                                </div>
-                                <p class="text-xs font-medium text-gray-300">Receive</p>
-                            </div>
-                        </div>
                     </div>
 
                     <!-- Right Side - Login Form -->
-                    <div class="w-full p-6 sm:p-8 flex flex-col justify-center bg-white">
+                    <div class="w-full p-5 sm:p-8 flex flex-col justify-center bg-white">
                         <!-- Welcome text -->
-                        <div class="text-center mb-5">
+                        <div class="text-center mb-4 sm:mb-5">
                             <a href="/" wire:navigate class="flex justify-center">
                                 <x-application-logo class="h-10 w-auto" />
                             </a>
-                            <h1 class="mt-4 text-xl font-bold text-gray-900">Welcome Back</h1>
+                            <h1 class="mt-4 text-lg sm:text-xl font-bold text-gray-900">Welcome Back</h1>
                             <p class="mt-1 text-sm text-gray-500">Sign in to your account</p>
                         </div>
 
                         <!-- Form Content -->
-                        <div class="w-full max-w-xs mx-auto">
+                        <div class="w-full max-w-[260px] sm:max-w-xs mx-auto">
                             {{ $slot }}
                         </div>
 

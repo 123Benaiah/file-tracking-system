@@ -21,39 +21,40 @@
                                     <span class="ml-2 text-sm text-gray-700">New File</span>
                                 </label>
                                 <label class="inline-flex items-center cursor-pointer">
-                                    <input type="radio" wire:model.live="fileCreationType" value="copy"
+                                    <input type="radio" wire:model.live="fileCreationType" value="tj"
                                            class="form-radio h-4 w-4 text-orange-500 focus:ring-orange-500 border-gray-300">
-                                    <span class="ml-2 text-sm text-gray-700">Create Copy of Existing File</span>
+                                    <span class="ml-2 text-sm text-gray-700">Create a TJ File</span>
                                 </label>
                             </div>
                         </div>
 
-                        <!-- Copy of File Number -->
-                        @if($fileCreationType === 'copy')
+                        <!-- TJ Source File Number -->
+                        @if($fileCreationType === 'tj')
                         <div class="md:col-span-2">
-                            <label for="copyOfFileNo" class="block text-sm font-medium text-gray-700 mb-2">
-                                Original File Number <span class="text-red-500">*</span>
+                            <label for="tjFileNo" class="block text-sm font-medium text-gray-700 mb-2">
+                                Source File Number <span class="text-red-500">*</span>
                             </label>
-                            <input type="text" wire:model.live.debounce.300ms="copyOfFileNo" id="copyOfFileNo"
-                                   placeholder="Enter original file number (e.g., FTS-20260209-0001)"
+                            <input type="text" wire:model.live.debounce.300ms="tjFileNo" id="tjFileNo"
+                                   placeholder="Enter source file number (e.g., FTS-20260209-0001)"
                                    class="w-full bg-white border-gray-300 text-gray-900 placeholder-gray-400 rounded-lg shadow-sm focus:border-orange-500 focus:ring-orange-500">
-                            @error('copyOfFileNo') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
+                            @error('tjFileNo') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
 
-                            @if($copyOfFileData)
+                            @if($tjFileData)
                             <div class="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg">
-                                <p class="text-sm font-medium text-green-800">Original File Found:</p>
-                                <p class="text-sm text-green-700"><span class="font-medium">File No:</span> {{ $copyOfFileData['new_file_no'] }}</p>
-                                <p class="text-sm text-green-700"><span class="font-medium">Subject:</span> {{ $copyOfFileData['subject'] }}</p>
-                                <p class="text-sm text-green-700"><span class="font-medium">Status:</span> {{ ucfirst(str_replace('_', ' ', $copyOfFileData['status'])) }}</p>
-                                <p class="text-sm text-green-700 mt-1"><span class="font-medium">New Copy Number:</span> {{ $copyOfFileData['new_file_no'] }}-copy{{ $copyOfFileData['next_copy_number'] }}</p>
+                                <p class="text-sm font-medium text-green-800">Source File Found:</p>
+                                <p class="text-sm text-green-700"><span class="font-medium">File No:</span> {{ $tjFileData['new_file_no'] }}</p>
+                                <p class="text-sm text-green-700"><span class="font-medium">Subject:</span> {{ $tjFileData['subject'] }}</p>
+                                <p class="text-sm text-green-700"><span class="font-medium">Status:</span> {{ ucfirst(str_replace('_', ' ', $tjFileData['status'])) }}</p>
+                                <p class="text-sm text-green-700 mt-1"><span class="font-medium">New TJ Number:</span> {{ $tjFileData['new_file_no'] }}-tj{{ $tjFileData['next_tj_number'] }}</p>
                             </div>
-                            @elseif(!empty($copyOfFileNo) && strlen($copyOfFileNo) >= 3)
-                            <p class="text-xs text-red-500 mt-1">No original file found with this number</p>
+                            @elseif(!empty($tjFileNo) && strlen($tjFileNo) >= 3)
+                            <p class="text-xs text-red-500 mt-1">No source file found with this number</p>
                             @endif
                         </div>
                         @endif
 
                         <!-- Subject Type Selection -->
+                        @if($fileCreationType !== 'tj' || !$tjFileData)
                         <div class="md:col-span-2">
                             <label class="block text-sm font-medium text-gray-700 mb-2">
                                 Subject <span class="text-red-500">*</span>
@@ -92,6 +93,20 @@
                             <p class="text-xs text-gray-500 mt-1">Enter a new subject name that doesn't exist in the list above.</p>
                             @endif
                         </div>
+                        @endif
+
+                        <!-- TJ Subject Display (Read-only) -->
+                        @if($fileCreationType === 'tj' && $tjFileData)
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Subject <span class="text-red-500">*</span>
+                            </label>
+                            <div class="p-3 bg-gray-100 border border-gray-300 rounded-lg">
+                                <p class="text-sm text-gray-900 font-medium">{{ $subject }}</p>
+                            </div>
+                            <p class="text-xs text-gray-500 mt-1">Subject is pulled from source file and cannot be changed</p>
+                        </div>
+                        @endif
 
                         <!-- File Title -->
                         <div class="md:col-span-2">
@@ -99,21 +114,25 @@
                                 File Title <span class="text-red-500">*</span>
                             </label>
                             <input type="text" wire:model="file_title" id="file_title"
-                                   class="w-full bg-white border-gray-300 text-gray-900 placeholder-gray-400 rounded-lg shadow-sm focus:border-orange-500 focus:ring-orange-500">
+                                   {{ $fileCreationType === 'tj' && $tjFileData ? 'readonly' : '' }}
+                                   class="w-full border-gray-300 text-gray-900 placeholder-gray-400 rounded-lg shadow-sm focus:border-orange-500 focus:ring-orange-500 {{ $fileCreationType === 'tj' && $tjFileData ? 'bg-gray-100' : 'bg-white' }}">
                             @error('file_title') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
+                            @if($fileCreationType === 'tj' && $tjFileData)
+                            <p class="text-xs text-gray-500 mt-1">File title is pulled from source file</p>
+                            @endif
                         </div>
 
                         <!-- New File Number -->
                         <div>
                             <label for="new_file_no" class="block text-sm font-medium text-gray-700 mb-2">
-                                {{ $fileCreationType === 'copy' ? 'Copy File Number' : 'New File Number' }} <span class="text-red-500">*</span>
+                                {{ $fileCreationType === 'tj' ? 'TJ File Number' : 'New File Number' }} <span class="text-red-500">*</span>
                             </label>
                             <input type="text" wire:model="new_file_no" id="new_file_no"
-                                   {{ $fileCreationType === 'copy' ? 'readonly' : '' }}
-                                   class="w-full bg-white border-gray-300 text-gray-900 placeholder-gray-400 rounded-lg shadow-sm focus:border-orange-500 focus:ring-orange-500 @if($fileCreationType === 'copy') bg-gray-100 @endif">
+                                   {{ $fileCreationType === 'tj' ? 'readonly' : '' }}
+                                   class="w-full bg-white border-gray-300 text-gray-900 placeholder-gray-400 rounded-lg shadow-sm focus:border-orange-500 focus:ring-orange-500 @if($fileCreationType === 'tj') bg-gray-100 @endif">
                             @error('new_file_no') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
-                            @if($fileCreationType === 'copy')
-                            <p class="text-xs text-blue-600 mt-1">Auto-generated copy number</p>
+                            @if($fileCreationType === 'tj')
+                            <p class="text-xs text-blue-600 mt-1">Auto-generated TJ number</p>
                             @else
                             <p class="text-xs text-gray-500 mt-1">Auto-generated file number (can be edited)</p>
                             @endif
@@ -128,8 +147,12 @@
                                 Old File Number (if any)
                             </label>
                             <input type="text" wire:model="old_file_no" id="old_file_no"
-                                   class="w-full bg-white border-gray-300 text-gray-900 placeholder-gray-400 rounded-lg shadow-sm focus:border-orange-500 focus:ring-orange-500">
+                                   {{ $fileCreationType === 'tj' && $tjFileData ? 'readonly' : '' }}
+                                   class="w-full border-gray-300 text-gray-900 placeholder-gray-400 rounded-lg shadow-sm focus:border-orange-500 focus:ring-orange-500 {{ $fileCreationType === 'tj' && $tjFileData ? 'bg-gray-100' : 'bg-white' }}">
                             @error('old_file_no') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
+                            @if($fileCreationType === 'tj' && $tjFileData)
+                            <p class="text-xs text-gray-500 mt-1">Auto-populated from source file</p>
+                            @endif
                         </div>
 
                         <!-- Priority -->
@@ -193,8 +216,8 @@
                                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                             </svg>
-                            <span wire:loading.remove wire:target="save">{{ $fileCreationType === 'copy' ? 'Create Copy' : 'Register File' }}</span>
-                            <span wire:loading wire:target="save">{{ $fileCreationType === 'copy' ? 'Creating Copy...' : 'Registering...' }}</span>
+                            <span wire:loading.remove wire:target="save">{{ $fileCreationType === 'tj' ? 'Create TJ File' : 'Register File' }}</span>
+                            <span wire:loading wire:target="save">{{ $fileCreationType === 'tj' ? 'Creating TJ File...' : 'Registering...' }}</span>
                         </button>
                     </div>
                 </form>

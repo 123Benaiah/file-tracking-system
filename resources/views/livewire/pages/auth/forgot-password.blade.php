@@ -2,7 +2,8 @@
 
 use Illuminate\Support\Facades\Password;
 use Livewire\Attributes\Layout;
-use Livewire\Volt\Component;
+use Livewire\Component;
+use Symfony\Component\Mailer\Exception\TransportException;
 
 new #[Layout('layouts.guest')] class extends Component
 {
@@ -17,22 +18,23 @@ new #[Layout('layouts.guest')] class extends Component
             'email' => ['required', 'string', 'email'],
         ]);
 
-        // We will send the password reset link to this user. Once we have attempted
-        // to send the link, we will examine the response then see the message we
-        // need to show to the user. Finally, we'll send out a proper response.
-        $status = Password::sendResetLink(
-            $this->only('email')
-        );
+        try {
+            $status = Password::sendResetLink(
+                $this->only('email')
+            );
 
-        if ($status != Password::RESET_LINK_SENT) {
-            $this->addError('email', __($status));
+            if ($status != Password::RESET_LINK_SENT) {
+                $this->addError('email', __($status));
+                return;
+            }
 
-            return;
+            $this->reset('email');
+            session()->flash('status', __($status));
+        } catch (TransportException $e) {
+            $this->addError('email', 'Unable to send email. Please check your internet connection or try again later.');
+        } catch (\Exception $e) {
+            $this->addError('email', 'Unable to send email. Please try again later.');
         }
-
-        $this->reset('email');
-
-        session()->flash('status', __($status));
     }
 }; ?>
 

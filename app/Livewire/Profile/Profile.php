@@ -13,7 +13,9 @@ class Profile extends Component
 
     public $employee_number;
     public $name;
+    public $formalName;
     public $email;
+    public $gender;
     public $unit;
     public $role;
     public $department;
@@ -37,12 +39,18 @@ class Profile extends Component
     public function mount()
     {
         $user = auth()->user();
+        $user->loadMissing(['position', 'departmentRel', 'unitRel.department']);
+
         $this->employee_number = $user->employee_number;
         $this->name = $user->name;
+        $this->formalName = $user->formal_name;
         $this->email = $user->email;
-        $this->role = $user->getRoleLabel();
-        $this->department = $user->department ?? 'N/A';
-        $this->unit = $user->unit ?? 'N/A';
+        $this->gender = $user->gender ? ucfirst($user->gender) : 'Not set';
+        $this->role = ucfirst($user->role);
+        $this->department = $user->departmentRel?->name
+            ?? $user->unitRel?->department?->name
+            ?? 'N/A';
+        $this->unit = $user->unitRel?->name ?? 'N/A';
         $this->position = $user->position?->title ?? 'N/A';
     }
 

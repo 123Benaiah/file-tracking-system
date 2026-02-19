@@ -23,7 +23,7 @@ class CheckRegistryStaff
 
         if (!$user->is_registry_staff && !$user->isRegistryStaff()) {
             return redirect()->route('dashboard')
-                ->with('error', 'Access denied. Only Registry staff can access this area.');
+                ->with('toast', ['type' => 'error', 'title' => 'Access Denied', 'message' => 'Only Registry staff can access this area.']);
         }
 
         return $next($request);

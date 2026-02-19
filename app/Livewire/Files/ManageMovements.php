@@ -21,6 +21,7 @@ class ManageMovements extends Component
     public $perPage = 10;
     public $selectedMovements = [];
     public $showDeleteModal = false;
+    public $showSingleDeleteModal = false;
     public $selectAll = false;
     public $deletingId = null;
 
@@ -94,13 +95,19 @@ class ManageMovements extends Component
 
     public function deleteSelected()
     {
-        $count = FileMovement::whereIn('id', $this->selectedMovements)->count();
-        FileMovement::whereIn('id', $this->selectedMovements)->delete();
-        
-        $this->toastSuccess('Movements Deleted', "$count movement(s) have been deleted successfully.");
-        $this->showDeleteModal = false;
-        $this->selectedMovements = [];
-        $this->selectAll = false;
+        try {
+            $count = FileMovement::whereIn('id', $this->selectedMovements)->count();
+            FileMovement::whereIn('id', $this->selectedMovements)->delete();
+
+            $this->toastSuccess('Movements Deleted', "$count movement(s) have been deleted successfully.");
+            $this->showDeleteModal = false;
+            $this->selectedMovements = [];
+            $this->selectAll = false;
+        } catch (\Exception $e) {
+            report($e);
+            $this->showDeleteModal = false;
+            $this->toastError('Delete Failed', 'Something went wrong while deleting movements. Please try again.');
+        }
     }
 
     public function openEditModal($movementId)
@@ -132,31 +139,52 @@ class ManageMovements extends Component
             'received_at' => 'nullable|date',
         ]);
 
-        $this->selectedMovement->update([
-            'sender_emp_no' => $this->sender_emp_no,
-            'intended_receiver_emp_no' => $this->intended_receiver_emp_no,
-            'actual_receiver_emp_no' => $this->actual_receiver_emp_no,
-            'movement_status' => $this->movement_status,
-            'sender_comments' => $this->sender_comments,
-            'receiver_comments' => $this->receiver_comments,
-            'sent_at' => $this->sent_at,
-            'received_at' => $this->received_at,
-        ]);
+        try {
+            $this->selectedMovement->update([
+                'sender_emp_no' => $this->sender_emp_no,
+                'intended_receiver_emp_no' => $this->intended_receiver_emp_no,
+                'actual_receiver_emp_no' => $this->actual_receiver_emp_no,
+                'movement_status' => $this->movement_status,
+                'sender_comments' => $this->sender_comments,
+                'receiver_comments' => $this->receiver_comments,
+                'sent_at' => $this->sent_at,
+                'received_at' => $this->received_at,
+            ]);
 
-        $this->toastSuccess('Movement Updated', 'File movement has been updated successfully.');
-
-        $this->closeModal();
+            $this->toastSuccess('Movement Updated', 'File movement has been updated successfully.');
+            $this->closeModal();
+        } catch (\Exception $e) {
+            report($e);
+            $this->toastError('Update Failed', 'Something went wrong while updating the movement. Please try again.');
+        }
     }
 
-    public function deleteMovement($movementId)
+    public function confirmDeleteMovement($movementId)
     {
         $this->deletingId = $movementId;
-        
-        $movement = FileMovement::findOrFail($movementId);
-        $movement->delete();
+        $this->showSingleDeleteModal = true;
+    }
 
+    public function deleteMovement()
+    {
+        if (!$this->deletingId) {
+            return;
+        }
+        
+        $movement = FileMovement::find($this->deletingId);
+        if ($movement) {
+            $movement->delete();
+            $this->toastSuccess('Movement Deleted', 'File movement has been deleted successfully.');
+        }
+        
+        $this->showSingleDeleteModal = false;
         $this->deletingId = null;
-        $this->toastSuccess('Movement Deleted', 'File movement has been deleted successfully.');
+    }
+
+    public function cancelDeleteMovement()
+    {
+        $this->showSingleDeleteModal = false;
+        $this->deletingId = null;
     }
 
     public function closeModal()

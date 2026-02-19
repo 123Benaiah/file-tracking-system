@@ -99,7 +99,7 @@
                                         </span>
                                     </div>
                                     <div>
-                                        <p class="text-sm font-medium text-gray-900">{{ $selectedRecipient['name'] }}</p>
+                                        <p class="text-sm font-medium text-gray-900">{{ $selectedRecipient['formal_name'] }}</p>
                                         <p class="text-xs text-gray-500">{{ $selectedRecipient['position'] }} - {{ $selectedRecipient['department'] }}</p>
                                     </div>
                                 </div>
@@ -285,8 +285,13 @@
                                             <span class="{{ $department === 'Registry' ? 'text-green-600' : 'text-gray-600' }} font-medium text-sm">{{ strtoupper(substr($receiver->name, 0, 2)) }}</span>
                                         </div>
                                         <div class="flex-1 text-left">
-                                            <p class="text-sm font-medium text-gray-900">{{ $receiver->name }}</p>
-                                            <p class="text-xs text-gray-500">{{ $receiver->position?->title ?? 'N/A' }}</p>
+                                            <p class="text-sm font-medium text-gray-900">{{ $receiver->formal_name }}</p>
+                                            <p class="text-xs text-gray-500">
+                                                <span class="font-medium">ID:</span> {{ $receiver->employee_number }}
+                                                @if($receiver->position?->title)
+                                                - {{ $receiver->position?->title ?? 'N/A' }}
+                                                @endif
+                                            </p>
                                         </div>
                                         <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>

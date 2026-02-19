@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Tracking Management System (FTMS) Presentation</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3a5f 0%, #2d5a87 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .presentation {
+            width: 100%;
+            max-width: 1200px;
+            aspect-ratio: 16/9;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 25px 80px rgba(0,0,0,0.4);
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .slide {
+            display: none;
+            width: 100%;
+            height: 100%;
+            padding: 60px 80px;
+            flex-direction: column;
+        }
+        
+        .slide.active {
+            display: flex;
+        }
+        
+        .slide-title {
+            background: linear-gradient(135deg, #1e3a5f 0%, #2d5a87 100%);
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+        
+        h1 {
+            font-size: 56px;
+            color: white;
+            margin-bottom: 30px;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+        }
+        
+        h2 {
+            font-size: 42px;
+            color: #1e3a5f;
+            margin-bottom: 40px;
+            padding-bottom: 15px;
+            border-bottom: 4px solid #2d5a87;
+        }
+        
+        .subtitle {
+            font-size: 28px;
+            color: rgba(255,255,255,0.9);
+            font-weight: 300;
+        }
+        
+        .content {
+            flex: 1;
+            overflow-y: auto;
+        }
+        
+        ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        
+        ul li {
+            font-size: 22px;
+            padding: 12px 0;
+            padding-left: 35px;
+            position: relative;
+            color: #333;
+        }
+        
+        ul li::before {
+            content: "▸";
+            position: absolute;
+            left: 0;
+            color: #2d5a87;
+            font-weight: bold;
+            font-size: 24px;
+        }
+        
+        .two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+        }
+        
+        .three-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 30px;
+        }
+        
+        .card {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 25px;
+            border-radius: 12px;
+            border-left: 5px solid #2d5a87;
+        }
+        
+        .card h3 {
+            color: #1e3a5f;
+            font-size: 20px;
+            margin-bottom: 15px;
+        }
+        
+        .card p {
+            font-size: 16px;
+            color: #555;
+            line-height: 1.6;
+        }
+        
+        .highlight-box {
+            background: linear-gradient(135deg, #e8f4fd 0%, #d1e8f9 100%);
+            padding: 25px 30px;
+            border-radius: 12px;
+            margin: 15px 0;
+            border-left: 5px solid #2d5a87;
+        }
+        
+        .highlight-box h4 {
+            color: #1e3a5f;
+            font-size: 20px;
+            margin-bottom: 10px;
+        }
+        
+        .highlight-box p {
+            font-size: 18px;
+            color: #444;
+            line-height: 1.7;
+        }
+        
+        .diagram {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 12px;
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .diagram-box {
+            display: inline-block;
+            background: #2d5a87;
+            color: white;
+            padding: 15px 30px;
+            border-radius: 8px;
+            margin: 10px;
+            font-weight: bold;
+        }
+        
+        .arrow {
+            font-size: 30px;
+            color: #2d5a87;
+            margin: 5px 0;
+        }
+        
+        .timeline {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin: 30px 0;
+        }
+        
+        .timeline-item {
+            flex: 1;
+            text-align: center;
+            padding: 15px;
+            position: relative;
+        }
+        
+        .timeline-item::after {
+            content: "→";
+            position: absolute;
+            right: -10px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 30px;
+            color: #2d5a87;
+        }
+        
+        .timeline-item:last-child::after {
+            display: none;
+        }
+        
+        .timeline-number {
+            width: 50px;
+            height: 50px;
+            background: #2d5a87;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+            margin: 0 auto 15px;
+        }
+        
+        .timeline-text {
+            font-size: 16px;
+            color: #333;
+        }
+        
+        .table-container {
+            overflow-x: auto;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        th {
+            background: #2d5a87;
+            color: white;
+            font-weight: 600;
+        }
+        
+        tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+        
+        .navigation {
+            position: absolute;
+            bottom: 20px;
+            right: 30px;
+            display: flex;
+            gap: 10px;
+            z-index: 100;
+        }
+        
+        .nav-btn {
+            background: #2d5a87;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.3s;
+        }
+        
+        .nav-btn:hover {
+            background: #1e3a5f;
+        }
+        
+        .slide-counter {
+            position: absolute;
+            bottom: 25px;
+            left: 30px;
+            font-size: 16px;
+            color: #666;
+        }
+        
+        .logo {
+            width: 120px;
+            height: 120px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 30px;
+            font-size: 48px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        .conclusion {
+            text-align: center;
+            justify-content: center;
+        }
+        
+        .conclusion h2 {
+            border: none;
+            font-size: 52px;
+        }
+        
+        .qa-text {
+            font-size: 32px;
+            color: #2d5a87;
+            margin-top: 40px;
+        }
+
+        @media print {
+            body {
+                background: white;
+            }
+            .presentation {
+                box-shadow: none;
+            }
+            .navigation {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="presentation">
+        <!-- SLIDE 1: TITLE SLIDE -->
+        <div class="slide slide-title active" data-slide="1">
+            <div class="logo">📁</div>
+            <h1>File Tracking Management System</h1>
+            <p class="subtitle">(FTMS)</p>
+            <p style="color: rgba(255,255,255,0.7); margin-top: 40px; font-size: 20px;">Ministry of Home Affairs and Internal Security</p>
+        </div>
+
+        <!-- SLIDE 2: PROBLEM STATEMENT -->
+        <div class="slide" data-slide="2">
+            <h2>Problem Statement</h2>
+            <div class="content">
+                <div class="highlight-box">
+                    <h4>Current Challenges</h4>
+                    <p>Manual, paper-based file management leads to inefficiency, lost documents, and lack of accountability.</p>
+                </div>
+                <ul>
+                    <li><strong>Lost Files:</strong> Physical files frequently go missing or get misplaced</li>
+                    <li><strong>No Traceability:</strong> Impossible to track file location in real-time</li>
+                    <li><strong>Delayed Processing:</strong> Manual logbooks cause significant delays</li>
+                    <li><strong>No Accountability:</strong> Cannot identify who is responsible for delays</li>
+                    <li><strong>Duplicate Work:</strong> Multiple copies of same file create confusion</li>
+                    <li><strong>Poor Security:</strong> No access control or audit trail for sensitive documents</li>
+                    <li><strong>Reporting Difficult:</strong> No data available for performance analysis</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- SLIDE 3: SOLUTION OVERVIEW -->
+        <div class="slide" data-slide="3">
+            <h2>Solution Overview</h2>
+            <div class="content">
+                <div class="two-column">
+                    <div class="card">
+                        <h3>🎯 Our Solution</h3>
+                        <p>A comprehensive web-based File Tracking Management System that digitizes the entire file lifecycle - from registration to archival - providing real-time visibility and complete accountability.</p>
+                    </div>
+                    <div class="card">
+                        <h3>✨ Key Benefits</h3>
+                        <ul>
+                            <li style="font-size: 16px; padding: 8px 0;">Real-time file tracking</li>
+                            <li style="font-size: 16px; padding: 8px 0;">Complete audit trail</li>
+                            <li style="font-size: 16px; padding: 8px 0;">Role-based access control</li>
+                            <li style="font-size: 16px; padding: 8px 0;">Automated workflows</li>
+                            <li style="font-size: 16px; padding: 8px 0;">Performance analytics</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="highlight-box" style="margin-top: 30px;">
+                    <h4>Mission</h4>
+                    <p>To eliminate paper-based file management and provide a secure, transparent, and efficient system for tracking all Ministry documents.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 4: SYSTEM ARCHITECTURE -->
+        <div class="slide" data-slide="4">
+            <h2>System Architecture</h2>
+            <div class="content">
+                <div class="diagram">
+                    <div style="margin-bottom: 20px;"><strong>CLIENT LAYER</strong></div>
+                    <div class="diagram-box">Desktop</div>
+                    <div class="diagram-box">Tablet</div>
+                    <div class="diagram-box">Mobile</div>
+                    <div class="arrow">↓ HTTPS</div>
+                    <div style="margin: 20px 0;"><strong>APPLICATION SERVER</strong></div>
+                    <div class="diagram-box">Laravel 12 + Livewire</div>
+                    <div class="arrow">↓</div>
+                    <div style="margin: 20px 0;"><strong>DATA STORAGE</strong></div>
+                    <div class="diagram-box">MySQL 8.0</div>
+                    <div class="diagram-box">File Storage</div>
+                </div>
+                <div class="three-column" style="margin-top: 20px;">
+                    <div class="card" style="padding: 15px;">
+                        <h3 style="font-size: 16px;">Frontend</h3>
+                        <p style="font-size: 14px;">Livewire + Tailwind CSS</p>
+                    </div>
+                    <div class="card" style="padding: 15px;">
+                        <h3 style="font-size: 16px;">Backend</h3>
+                        <p style="font-size: 14px;">Laravel 12 (PHP 8.2)</p>
+                    </div>
+                    <div class="card" style="padding: 15px;">
+                        <h3 style="font-size: 16px;">Database</h3>
+                        <p style="font-size: 14px;">MySQL 8.0</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 5: KEY FEATURES - PART 1 -->
+        <div class="slide" data-slide="5">
+            <h2>Key Features - Part 1</h2>
+            <div class="content">
+                <div class="two-column">
+                    <div>
+                        <div class="card" style="margin-bottom: 20px;">
+                            <h3>📝 File Registration</h3>
+                            <ul>
+                                <li style="font-size: 16px;">Auto-generated unique file numbers (FTS-YYYYMMDD-XXXX)</li>
+                                <li style="font-size: 16px;">Legacy file number support</li>
+                                <li style="font-size: 16px;">Priority classification (Normal, Urgent, Very Urgent)</li>
+                                <li style="font-size: 16px;">Confidentiality levels</li>
+                                <li style="font-size: 16px;">Digital attachments (up to 10MB)</li>
+                            </ul>
+                        </div>
+                        <div class="card">
+                            <h3>📤 File Transfer</h3>
+                            <ul>
+                                <li style="font-size: 16px;">Intuitive send interface</li>
+                                <li style="font-size: 16px;">Department filtering</li>
+                                <li style="font-size: 16px;">Multiple delivery methods</li>
+                                <li style="font-size: 16px;">Complete movement history</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="card" style="margin-bottom: 20px;">
+                            <h3>✅ Receipt Confirmation</h3>
+                            <ul>
+                                <li style="font-size: 16px;">Pending receipts dashboard</li>
+                                <li style="font-size: 16px;">One-click confirmation</li>
+                                <li style="font-size: 16px;">Auto status updates</li>
+                                <li style="font-size: 16px;">Bulk confirmation</li>
+                            </ul>
+                        </div>
+                        <div class="card">
+                            <h3>🔍 File Tracking</h3>
+                            <ul>
+                                <li style="font-size: 16px;">Real-time location tracking</li>
+                                <li style="font-size: 16px;">Movement history</li>
+                                <li style="font-size: 16px;">Status monitoring</li>
+                                <li style="font-size: 16px;">Search & filter</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 6: KEY FEATURES - PART 2 -->
+        <div class="slide" data-slide="6">
+            <h2>Key Features - Part 2</h2>
+            <div class="content">
+                <div class="two-column">
+                    <div class="card" style="margin-bottom: 20px;">
+                        <h3>📊 Dashboards & Reporting</h3>
+                        <ul>
+                            <li style="font-size: 16px;">Registry Dashboard - Statistics, pending receipts, recent activity</li>
+                            <li style="font-size: 16px;">Department Dashboard - My files, pending actions</li>
+                            <li style="font-size: 16px;">Admin Dashboard - System-wide metrics, audit logs</li>
+                            <li style="font-size: 16px;">CSV export functionality</li>
+                            <li style="font-size: 16px;">Real-time counters</li>
+                        </ul>
+                    </div>
+                    <div class="card" style="margin-bottom: 20px;">
+                        <h3>🏢 Organization Management</h3>
+                        <ul>
+                            <li style="font-size: 16px;">Department hierarchy</li>
+                            <li style="font-size: 16px;">Unit management</li>
+                            <li style="font-size: 16px;">Position configuration</li>
+                            <li style="font-size: 16px;">Head assignments</li>
+                            <li style="font-size: 16px;">Employee mapping</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="card">
+                    <h3>🔗 File Merging</h3>
+                    <p>Merge file copies back into original files while preserving complete movement history with full audit trail.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 7: KEY FEATURES - PART 3 -->
+        <div class="slide" data-slide="7">
+            <h2>Key Features - Part 3</h2>
+            <div class="content">
+                <div class="two-column">
+                    <div class="card" style="margin-bottom: 20px;">
+                        <h3>🔐 Security Features</h3>
+                        <ul>
+                            <li style="font-size: 16px;">Role-based access control</li>
+                            <li style="font-size: 16px;">Secure authentication</li>
+                            <li style="font-size: 16px;">Password policies</li>
+                            <li style="font-size: 16px;">Session management</li>
+                            <li style="font-size: 16px;">Activity logging</li>
+                        </ul>
+                    </div>
+                    <div class="card" style="margin-bottom: 20px;">
+                        <h3>📋 Audit & Compliance</h3>
+                        <ul>
+                            <li style="font-size: 16px;">Complete audit trail</li>
+                            <li style="font-size: 16px;">User activity logs</li>
+                            <li style="font-size: 16px;">File history tracking</li>
+                            <li style="font-size: 16px;">SLA monitoring</li>
+                            <li style="font-size: 16px;">Compliance reporting</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="card">
+                    <h3>📱 User Experience</h3>
+                    <p>Responsive design that works on desktop, tablet, and mobile devices. Intuitive interface with minimal training required.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 8: USER ROLES & ACCESS CONTROL -->
+        <div class="slide" data-slide="8">
+            <h2>User Roles & Access Control</h2>
+            <div class="content">
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Feature</th>
+                                <th>Admin</th>
+                                <th>Registry Head</th>
+                                <th>Registry Staff</th>
+                                <th>Dept User</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Dashboard Access</strong></td>
+                                <td>Admin</td>
+                                <td>Registry</td>
+                                <td>Registry</td>
+                                <td>Department</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Create Files</strong></td>
+                                <td>✗</td>
+                                <td>✓</td>
+                                <td>✗</td>
+                                <td>✗</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Send Files</strong></td>
+                                <td>✗</td>
+                                <td>✓</td>
+                                <td>✓</td>
+                                <td>✓</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Receive/Confirm</strong></td>
+                                <td>✗</td>
+                                <td>✓</td>
+                                <td>✓</td>
+                                <td>✓</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Track Files</strong></td>
+                                <td>✓</td>
+                                <td>✓</td>
+                                <td>✓</td>
+                                <td>✓</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Merge Files</strong></td>
+                                <td>✗</td>
+                                <td>✓</td>
+                                <td>✗</td>
+                                <td>✗</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Manage Employees</strong></td>
+                                <td>✓</td>
+                                <td>Create Users</td>
+                                <td>✗</td>
+                                <td>✗</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Org Structure</strong></td>
+                                <td>✓</td>
+                                <td>✗</td>
+                                <td>✗</td>
+                                <td>✗</td>
+                            </tr>
+                            <tr>
+                                <td><strong>View Audit Logs</strong></td>
+                                <td>✓</td>
+                                <td>✗</td>
+                                <td>✗</td>
+                                <td>✗</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 9: FILE WORKFLOW -->
+        <div class="slide" data-slide="9">
+            <h2>File Workflow</h2>
+            <div class="content">
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <div class="timeline-number">1</div>
+                        <div class="timeline-text"><strong>Registration</strong><br>File registered at registry<br>Auto-generated file number</div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-number">2</div>
+                        <div class="timeline-text"><strong>Sending</strong><br>Select recipient<br>Create movement record</div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-number">3</div>
+                        <div class="timeline-text"><strong>Receiving</strong><br>Confirm receipt<br>Update status</div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-number">4</div>
+                        <div class="timeline-text"><strong>Processing</strong><br>Review file<br>Take action</div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-number">5</div>
+                        <div class="timeline-text"><strong>Return</strong><br>Send back to registry<br>Complete/Archive</div>
+                    </div>
+                </div>
+                <div class="highlight-box" style="margin-top: 30px;">
+                    <h4>File Statuses</h4>
+                    <p>at_registry → in_transit → received → under_review → action_required → completed → returned_to_registry → archived/merged</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 10: DATABASE DESIGN -->
+        <div class="slide" data-slide="10">
+            <h2>Database Design</h2>
+            <div class="content">
+                <div class="two-column">
+                    <div class="card">
+                        <h3>📊 Core Tables</h3>
+                        <ul>
+                            <li style="font-size: 16px;"><strong>employees</strong> - User accounts, roles, department mapping</li>
+                            <li style="font-size: 16px;"><strong>files</strong> - File records with metadata</li>
+                            <li style="font-size: 16px;"><strong>file_movements</strong> - Transfer history</li>
+                            <li style="font-size: 16px;"><strong>departments</strong> - Organization units</li>
+                            <li style="font-size: 16px;"><strong>units</strong> - Sub-departments</li>
+                            <li style="font-size: 16px;"><strong>positions</strong> - Job titles</li>
+                            <li style="font-size: 16px;"><strong>audit_logs</strong> - System activity</li>
+                        </ul>
+                    </div>
+                    <div class="card">
+                        <h3>🔗 Key Relationships</h3>
+                        <ul>
+                            <li style="font-size: 16px;">Employees → Departments (many-to-one)</li>
+                            <li style="font-size: 16px;">Employees → Units (many-to-one)</li>
+                            <li style="font-size: 16px;">Files → Employees (current holder)</li>
+                            <li style="font-size: 16px;">FileMovements → Files (many-to-one)</li>
+                            <li style="font-size: 16px;">FileMovements → Employees (senders/receivers)</li>
+                            <li style="font-size: 16px;">Units → Departments (many-to-one)</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 11: IMPLEMENTATION TIMELINE -->
+        <div class="slide" data-slide="11">
+            <h2>Implementation Timeline</h2>
+            <div class="content">
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <div class="timeline-number">1</div>
+                        <div class="timeline-text"><strong>Week 1-2</strong><br>Requirements Analysis<br>System Design</div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-number">2</div>
+                        <div class="timeline-text"><strong>Week 3-6</strong><br>Core Development<br>Database Setup</div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-number">3</div>
+                        <div class="timeline-text"><strong>Week 7-10</strong><br>Feature Development<br>Integration</div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-number">4</div>
+                        <div class="timeline-text"><strong>Week 11-12</strong><br>Testing<br>User Training</div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-number">5</div>
+                        <div class="timeline-text"><strong>Week 13</strong><br>Deployment<br>Go Live</div>
+                    </div>
+                </div>
+                <div class="highlight-box" style="margin-top: 30px;">
+                    <h4>Total Duration: 13 Weeks</h4>
+                    <p>Agile methodology with 2-week sprints. Regular stakeholder reviews and feedback integration.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 12: TESTING & QUALITY ASSURANCE -->
+        <div class="slide" data-slide="12">
+            <h2>Testing & Quality Assurance</h2>
+            <div class="content">
+                <div class="two-column">
+                    <div>
+                        <div class="card" style="margin-bottom: 20px;">
+                            <h3>🧪 Testing Types</h3>
+                            <ul>
+                                <li style="font-size: 16px;">Unit Testing - Individual components</li>
+                                <li style="font-size: 16px;">Integration Testing - Module interactions</li>
+                                <li style="font-size: 16px;">System Testing - End-to-end workflows</li>
+                                <li style="font-size: 16px;">Acceptance Testing - User validation</li>
+                                <li style="font-size: 16px;">Performance Testing - Load & stress</li>
+                                <li style="font-size: 16px;">Security Testing - Vulnerability scan</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="card" style="margin-bottom: 20px;">
+                            <h3>✅ Quality Metrics</h3>
+                            <ul>
+                                <li style="font-size: 16px;">Code coverage > 80%</li>
+                                <li style="font-size: 16px;">All critical paths tested</li>
+                                <li style="font-size: 16px;">Zero high-severity bugs</li>
+                                <li style="font-size: 16px;">Response time < 2 seconds</li>
+                                <li style="font-size: 16px;">Cross-browser compatibility</li>
+                                <li style="font-size: 16px;">Mobile responsiveness verified</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="card">
+                    <h3>📋 Manual Testing Checklist</h3>
+                    <p>User authentication, File registration, File sending/receiving, Role-based access, Dashboard functionality, CSV export, File merging, Audit logging</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 13: BENEFITS & ROI -->
+        <div class="slide" data-slide="13">
+            <h2>Benefits & ROI</h2>
+            <div class="content">
+                <div class="three-column">
+                    <div class="card" style="text-align: center;">
+                        <div style="font-size: 48px; margin-bottom: 15px;">⏱️</div>
+                        <h3>Time Savings</h3>
+                        <p>Reduce file search time by 90% with instant digital tracking</p>
+                    </div>
+                    <div class="card" style="text-align: center;">
+                        <div style="font-size: 48px; margin-bottom: 15px;">📉</div>
+                        <h3>Cost Reduction</h3>
+                        <p>Eliminate paper, printing, and manual labor costs</p>
+                    </div>
+                    <div class="card" style="text-align: center;">
+                        <div style="font-size: 48px; margin-bottom: 15px;">🎯</div>
+                        <h3>Accountability</h3>
+                        <p>Complete audit trail eliminates lost files and delays</p>
+                    </div>
+                </div>
+                <div class="two-column" style="margin-top: 30px;">
+                    <div class="highlight-box">
+                        <h4>Quantifiable Benefits</h4>
+                        <ul>
+                            <li style="font-size: 16px;">90% reduction in file search time</li>
+                            <li style="font-size: 16px;">100% document traceability</li>
+                            <li style="font-size: 16px;">70% faster processing workflows</li>
+                        </ul>
+                    </div>
+                    <div class="highlight-box">
+                        <h4>Qualitative Benefits</h4>
+                        <ul>
+                            <li style="font-size: 16px;">Improved transparency</li>
+                            <li style="font-size: 16px;">Better decision-making with data</li>
+                            <li style="font-size: 16px;">Enhanced security & compliance</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 14: DEPLOYMENT & FUTURE ENHANCEMENTS -->
+        <div class="slide" data-slide="14">
+            <h2>Deployment & Future Enhancements</h2>
+            <div class="content">
+                <div class="two-column">
+                    <div>
+                        <div class="card" style="margin-bottom: 20px;">
+                            <h3>🚀 Deployment Requirements</h3>
+                            <ul>
+                                <li style="font-size: 16px;"><strong>Minimum:</strong> 2 vCPU, 4GB RAM, 50GB SSD</li>
+                                <li style="font-size: 16px;"><strong>Recommended:</strong> 4 vCPU, 8GB RAM, 100GB SSD</li>
+                                <li style="font-size: 16px;">PHP 8.2+, MySQL 8.0</li>
+                                <li style="font-size: 16px;">SSL certificate for HTTPS</li>
+                                <li style="font-size: 16px;">Regular backups configured</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="card" style="margin-bottom: 20px;">
+                            <h3>🔮 Future Enhancements</h3>
+                            <ul>
+                                <li style="font-size: 16px;">Mobile app (iOS/Android)</li>
+                                <li style="font-size: 16px;">Email notifications</li>
+                                <li style="font-size: 16px;">Digital signature integration</li>
+                                <li style="font-size: 16px;">OCR for document scanning</li>
+                                <li style="font-size: 16px;">AI-powered search</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="highlight-box">
+                    <h4>Maintenance & Support</h4>
+                    <p>Ongoing technical support, regular security updates, feature enhancements, and user training programs.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 15: CONCLUSION & Q&A -->
+        <div class="slide slide-title conclusion" data-slide="15">
+            <h2>Thank You!</h2>
+            <p class="subtitle">Questions & Answers</p>
+            <p class="qa-text">Let's Discuss Your Needs</p>
+            <p style="color: rgba(255,255,255,0.7); margin-top: 60px; font-size: 18px;">Contact: support@ftms.moha.gov</p>
+        </div>
+
+        <!-- Navigation -->
+        <div class="navigation">
+            <button class="nav-btn" onclick="prevSlide()">← Previous</button>
+            <button class="nav-btn" onclick="nextSlide()">Next →</button>
+        </div>
+        
+        <div class="slide-counter">
+            Slide <span id="currentSlide">1</span> of <span id="totalSlides">15</span>
+        </div>
+    </div>
+
+    <script>
+        let currentSlide = 1;
+        const totalSlides = 15;
+
+        function showSlide(n) {
+            const slides = document.querySelectorAll('.slide');
+            
+            if (n > totalSlides) currentSlide = 1;
+            if (n < 1) currentSlide = totalSlides;
+            
+            slides.forEach(slide => slide.classList.remove('active'));
+            slides[currentSlide - 1].classList.add('active');
+            
+            document.getElementById('currentSlide').textContent = currentSlide;
+        }
+
+        function nextSlide() {
+            currentSlide++;
+            showSlide(currentSlide);
+        }
+
+        function prevSlide() {
+            currentSlide--;
+            showSlide(currentSlide);
+        }
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowRight' || e.key === ' ') {
+                nextSlide();
+            } else if (e.key === 'ArrowLeft') {
+                prevSlide();
+            }
+        });
+
+        document.getElementById('totalSlides').textContent = totalSlides;
+    </script>
+</body>
+</html>

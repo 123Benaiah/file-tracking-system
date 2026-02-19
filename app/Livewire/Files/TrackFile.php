@@ -34,7 +34,7 @@ class TrackFile extends Component
                     ->orWhere('subject', 'like', $searchTerm)
                     ->orWhere('file_title', 'like', $searchTerm);
             })
-            ->with(['currentHolder', 'registeredBy'])
+            ->with(['currentHolder', 'currentHolder.departmentRel', 'currentHolder.unitRel', 'registeredBy'])
             ->get();
 
         if ($this->searchResults->count() === 1) {
@@ -50,13 +50,21 @@ class TrackFile extends Component
     {
         $this->selectedFile = File::with([
             'currentHolder',
+            'currentHolder.departmentRel',
+            'currentHolder.unitRel',
             'registeredBy',
             'movements' => function ($query) {
                 $query->orderBy('sent_at', 'desc');
             },
             'movements.sender',
+            'movements.sender.departmentRel',
+            'movements.sender.unitRel',
             'movements.intendedReceiver',
+            'movements.intendedReceiver.departmentRel',
+            'movements.intendedReceiver.unitRel',
             'movements.actualReceiver',
+            'movements.actualReceiver.departmentRel',
+            'movements.actualReceiver.unitRel',
         ])->findOrFail($fileId);
     }
 

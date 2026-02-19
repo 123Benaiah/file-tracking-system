@@ -74,6 +74,7 @@ class SendFile extends Component
             $this->selectedRecipient = [
                 'employee_number' => $receiver->employee_number,
                 'name' => $receiver->name,
+                'formal_name' => $receiver->formal_name,
                 'position' => $receiver->position?->title,
                 'department' => $receiver->departmentRel?->name ?? $receiver->department,
                 'unit' => $receiver->unitRel?->name ?? $receiver->unit,
@@ -116,58 +117,61 @@ class SendFile extends Component
             'handCarriedBy' => 'nullable|string|max:100',
         ]);
 
-        $receiver = Employee::find($this->intendedReceiverEmpNo);
-        $sender = auth()->user();
+        try {
+            $receiver = Employee::find($this->intendedReceiverEmpNo);
+            $sender = auth()->user();
 
-        $isReturningToRegistry = $receiver->isRegistryStaff() && ! $sender->isRegistryStaff();
-        
-        // Check if sending a completed file back out - only HRA registry staff can resend
-        $isReSendingCompletedFile = $this->file->status === 'completed' && $sender->canResendFiles() && ! $isReturningToRegistry;
+            $isReturningToRegistry = $receiver->isRegistryStaff() && ! $sender->isRegistryStaff();
 
-        $movement = FileMovement::create([
-            'file_id' => $this->file->id,
-            'sender_emp_no' => $sender->employee_number,
-            'intended_receiver_emp_no' => $this->intendedReceiverEmpNo,
-            'delivery_method' => $this->deliveryMethod,
-            'sender_comments' => $this->senderComments,
-            'hand_carried_by' => $this->handCarriedBy,
-            'movement_status' => 'sent',
-            'sent_at' => now(),
-            'sla_days' => 3,
-        ]);
+            $isReSendingCompletedFile = $this->file->status === 'completed' && $sender->canResendFiles() && ! $isReturningToRegistry;
 
-        if ($isReturningToRegistry) {
-            $newStatus = 'completed';
-        } elseif ($isReSendingCompletedFile) {
-            // Completed file being sent out again - becomes in transit
-            $newStatus = 'in_transit';
-        } else {
-            $newStatus = 'in_transit';
+            $movement = FileMovement::create([
+                'file_id' => $this->file->id,
+                'sender_emp_no' => $sender->employee_number,
+                'intended_receiver_emp_no' => $this->intendedReceiverEmpNo,
+                'delivery_method' => $this->deliveryMethod,
+                'sender_comments' => $this->senderComments,
+                'hand_carried_by' => $this->handCarriedBy,
+                'movement_status' => 'sent',
+                'sent_at' => now(),
+                'sla_days' => 3,
+            ]);
+
+            if ($isReturningToRegistry) {
+                $newStatus = 'completed';
+            } elseif ($isReSendingCompletedFile) {
+                $newStatus = 'in_transit';
+            } else {
+                $newStatus = 'in_transit';
+            }
+
+            $this->file->update([
+                'status' => $newStatus,
+            ]);
+
+            \App\Models\AuditLog::create([
+                'employee_number' => $sender->employee_number,
+                'action' => $isReturningToRegistry ? 'file_returned' : 'file_sent',
+                'description' => $isReturningToRegistry
+                    ? 'Returned file '.$this->file->new_file_no.' to registry ('.$this->intendedReceiverEmpNo.')'
+                    : 'Sent file '.$this->file->new_file_no.' to '.$this->intendedReceiverEmpNo,
+                'ip_address' => request()->ip(),
+                'user_agent' => request()->userAgent(),
+                'new_data' => $movement->toArray(),
+            ]);
+
+            $this->toastSuccess(
+                $isReturningToRegistry ? 'File Returned' : 'File Sent',
+                $isReturningToRegistry
+                    ? 'File '.$this->file->new_file_no.' has been returned to registry.'
+                    : 'File '.$this->file->new_file_no.' has been sent to '.$receiver->formal_name.'.'
+            );
+
+            return redirect()->route('files.sent-pending');
+        } catch (\Exception $e) {
+            report($e);
+            $this->toastError('Send Failed', 'Something went wrong while sending the file. Please try again.');
         }
-
-        $this->file->update([
-            'status' => $newStatus,
-        ]);
-
-        \App\Models\AuditLog::create([
-            'employee_number' => $sender->employee_number,
-            'action' => $isReturningToRegistry ? 'file_returned' : 'file_sent',
-            'description' => $isReturningToRegistry
-                ? 'Returned file '.$this->file->new_file_no.' to registry ('.$this->intendedReceiverEmpNo.')'
-                : 'Sent file '.$this->file->new_file_no.' to '.$this->intendedReceiverEmpNo,
-            'ip_address' => request()->ip(),
-            'user_agent' => request()->userAgent(),
-            'new_data' => $movement->toArray(),
-        ]);
-
-        $this->toastSuccess(
-            $isReturningToRegistry ? 'File Returned' : 'File Sent',
-            $isReturningToRegistry
-                ? 'File '.$this->file->new_file_no.' has been returned to registry.'
-                : 'File '.$this->file->new_file_no.' has been sent to '.$receiver->name.'.'
-        );
-
-        return redirect()->route('dashboard');
     }
 
     public function render()
