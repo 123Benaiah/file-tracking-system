@@ -18,9 +18,6 @@
 
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
-
-        <!-- Puter.js AI SDK (client-side, free) -->
-        <script src="https://js.puter.com/v2/"></script>
     </head>
     <body class="font-sans antialiased overflow-x-hidden">
         <div class="min-h-screen bg-gradient-to-br from-slate-100 via-gray-100 to-slate-200 relative overflow-x-hidden">
@@ -47,8 +44,5 @@
 <!-- Toast Notifications -->
             <x-toast-notifications />
         </div>
-
-        {{-- AI Chatbot Widget --}}
-        @include('partials.chatbot')
     </body>
 </html>
