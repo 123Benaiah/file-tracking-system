@@ -85,22 +85,23 @@
                                 <div class="text-xs">{{ $movement->received_at->format('h:i A') }}</div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm">
-                                @if((($movement->file->status == 'completed' || $movement->file->status == 'received') && auth()->user()->canResendFiles()))
-                                <a href="{{ route('files.send', $movement->file) }}" class="inline-flex items-center px-3 py-2 text-sm font-medium rounded-lg text-white bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 shadow-sm transition-all">
-                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
-                                    </svg>
-                                    {{ $movement->file->status == 'completed' ? 'Resend' : 'Send' }}
-                                </a>
-                                @else
-                                <a href="{{ route('files.show', $movement->file) }}" class="inline-flex items-center px-3 py-2 text-sm font-medium rounded-lg text-orange-600 bg-orange-50 hover:bg-orange-100 transition-colors">
-                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 0 11-6 0 3 0 016 0z"></path>
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
-                                    </svg>
-                                    View
-                                </a>
-                                @endif
+                                <div class="flex items-center gap-2">
+                                    <a href="{{ route('files.show', $movement->file) }}" class="inline-flex items-center px-3 py-2 text-sm font-medium rounded-lg text-blue-600 bg-blue-50 hover:bg-blue-100 transition-colors">
+                                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 0 11-6 0 3 0 016 0z"></path>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                        </svg>
+                                        View
+                                    </a>
+                                    @if((($movement->file->status == 'completed' || $movement->file->status == 'received') && auth()->user()->canResendFiles()))
+                                    <a href="{{ route('files.send', $movement->file) }}" class="inline-flex items-center px-3 py-2 text-sm font-medium rounded-lg text-white bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 shadow-sm transition-all">
+                                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                                        </svg>
+                                        {{ $movement->file->status == 'completed' ? 'Resend' : 'Send' }}
+                                    </a>
+                                    @endif
+                                </div>
                             </td>
                         </tr>
                         @empty

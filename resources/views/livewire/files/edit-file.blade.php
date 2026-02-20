@@ -129,26 +129,82 @@
                                       class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500"></textarea>
                             @error('remarks') <span class="text-red-600 text-sm">{{ $message }}</span> @enderror
                         </div>
+
+                        <!-- Existing Attachments -->
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Current Attachments</label>
+                            @if(count($existingAttachments) > 0)
+                            <div class="space-y-2 mb-3">
+                                @foreach($existingAttachments as $attachment)
+                                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 bg-gray-50 rounded-lg {{ $this->isAttachmentMarkedForDeletion($attachment['id']) ? 'opacity-50 bg-red-50' : '' }} gap-2">
+                                    <div class="flex items-center min-w-0">
+                                        <svg class="w-5 h-5 text-gray-400 mr-2 sm:mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path>
+                                        </svg>
+                                        <div class="min-w-0">
+                                            <p class="text-sm font-medium text-gray-900 truncate">{{ $attachment['original_name'] }}</p>
+                                            <p class="text-xs text-gray-500">{{ number_format($attachment['size'] / 1024, 1) }} KB</p>
+                                        </div>
+                                    </div>
+                                    @if($this->isAttachmentMarkedForDeletion($attachment['id']))
+                                    <button type="button" wire:click="restoreAttachment({{ $attachment['id'] }})" class="text-green-600 hover:text-green-800 text-sm whitespace-nowrap">
+                                        Restore
+                                    </button>
+                                    @else
+                                    <button type="button" wire:click="removeExistingAttachment({{ $attachment['id'] }})" class="text-red-600 hover:text-red-800 text-sm whitespace-nowrap">
+                                        Remove
+                                    </button>
+                                    @endif
+                                </div>
+                                @endforeach
+                            </div>
+                            @else
+                            <p class="text-sm text-gray-500 mb-3">No attachments</p>
+                            @endif
+                        </div>
+
+                        <!-- Add New Attachments -->
+                        <div class="md:col-span-2">
+                            <label for="attachments" class="block text-sm font-medium text-gray-700 mb-2">Add New Attachments</label>
+                            <input type="file" wire:model="attachments" id="attachments" multiple
+                                   class="w-full bg-white border border-gray-300 text-gray-900 text-sm rounded-lg shadow-sm focus:border-green-500 focus:ring-green-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-l-lg file:border-0 file:text-xs file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100">
+                            <p class="text-xs text-gray-500 mt-1">You can select multiple files (max 10MB each)</p>
+                            
+                            @if(count($attachments) > 0)
+                            <div class="mt-3 space-y-2">
+                                @foreach($attachments as $index => $attachment)
+                                <div class="flex items-center justify-between p-2 bg-gray-50 rounded-lg gap-2">
+                                    <span class="text-sm text-gray-700 truncate">{{ $attachment->getClientOriginalName() }}</span>
+                                    <button type="button" wire:click="removeNewAttachment({{ $index }})" class="text-red-500 hover:text-red-700 flex-shrink-0">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                        </svg>
+                                    </button>
+                                </div>
+                                @endforeach
+                            </div>
+                            @endif
+                        </div>
                     </div>
                 </div>
 
                 <!-- Actions -->
-                <div class="flex justify-between items-center">
+                <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
                     <button type="button" wire:click="openDeleteModal" wire:loading.attr="disabled" wire:loading.class="opacity-75 cursor-not-allowed"
-                            class="inline-flex items-center px-4 py-2 bg-red-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-red-700 focus:bg-red-700 active:bg-red-900 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition ease-in-out duration-150 disabled:opacity-75 disabled:cursor-not-allowed">
+                            class="inline-flex items-center justify-center px-4 py-2 bg-red-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-red-700 focus:bg-red-700 active:bg-red-900 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition ease-in-out duration-150 disabled:opacity-75 disabled:cursor-not-allowed w-full sm:w-auto">
                         <svg wire:loading.remove wire:target="openDeleteModal" class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
                         </svg>
                         <span>Delete File</span>
                     </button>
 
-                    <div class="flex gap-4">
+                    <div class="flex flex-col sm:flex-row gap-2 sm:gap-4 w-full sm:w-auto">
                         <a href="{{ route('files.show', $file) }}"
-                           class="inline-flex items-center px-4 py-2 bg-white border border-gray-300 rounded-md font-semibold text-xs text-gray-700 uppercase tracking-widest hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 transition ease-in-out duration-150">
+                           class="inline-flex items-center justify-center px-4 py-2 bg-white border border-gray-300 rounded-md font-semibold text-xs text-gray-700 uppercase tracking-widest hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 transition ease-in-out duration-150 w-full sm:w-auto">
                             Cancel
                         </a>
                         <button type="submit" wire:loading.attr="disabled" wire:loading.class="opacity-75 cursor-not-allowed"
-                                class="inline-flex items-center px-4 py-2 bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700 focus:bg-green-700 active:bg-green-800 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition ease-in-out duration-150 disabled:opacity-75 disabled:cursor-not-allowed">
+                                class="inline-flex items-center justify-center px-4 py-2 bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700 focus:bg-green-700 active:bg-green-800 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition ease-in-out duration-150 disabled:opacity-75 disabled:cursor-not-allowed w-full sm:w-auto">
                             <svg wire:loading wire:target="update" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>

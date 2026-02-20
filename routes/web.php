@@ -20,6 +20,7 @@ use App\Livewire\Admin\PositionManagement;
 use App\Livewire\Admin\DepartmentHeadManagement;
 use App\Livewire\Admin\UnitHeadManagement;
 use App\Livewire\Profile\Profile;
+use Illuminate\Support\Facades\Storage;
 
 Route::get('/', function () {
     return redirect()->route('login');
@@ -85,4 +86,17 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/files/{file}', function (\App\Models\File $file) {
         return view('files.show', compact('file'));
     })->name('files.show');
+    
+    // Attachment download route
+    Route::get('/files/attachment/{attachment}/download', function (\App\Models\FileAttachment $attachment) {
+        if (!Storage::disk('local')->exists($attachment->path)) {
+            abort(404, 'File not found');
+        }
+        
+        return Storage::disk('local')->download(
+            $attachment->path,
+            $attachment->original_name,
+            ['Content-Type' => $attachment->mime_type]
+        );
+    })->name('files.attachment.download');
 });

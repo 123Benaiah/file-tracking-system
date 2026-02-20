@@ -4,8 +4,21 @@
             <h2 class="font-semibold text-lg sm:text-xl text-gray-800 leading-tight">
                 File Details
             </h2>
-            @if(auth()->user()->isRegistryHead())
+            @if($file->canBeSentBy(auth()->user()) || auth()->user()->isRegistryHead())
             <div class="flex flex-wrap gap-2">
+                @if($file->canBeSentBy(auth()->user()))
+                <a href="{{ route('files.send', $file) }}" class="flex-1 sm:flex-none inline-flex items-center justify-center px-3 sm:px-4 py-2 bg-gradient-to-r from-green-500 to-green-600 border border-transparent rounded-lg font-semibold text-xs text-white uppercase tracking-widest hover:from-green-600 hover:to-green-700 focus:from-green-600 focus:to-green-700 active:from-green-700 active:to-green-800 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 shadow-lg shadow-green-500/25 transition ease-in-out duration-150">
+                    <svg class="w-4 h-4 mr-1 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                    </svg>
+                    @if(auth()->user()->isRegistryStaff())
+                        <span>Resend</span>
+                    @else
+                        <span>send</span>
+                    @endif
+                </a>
+                @endif
+                @if(auth()->user()->isRegistryHead())
                 <a href="{{ route('files.edit', $file) }}" class="flex-1 sm:flex-none inline-flex items-center justify-center px-3 sm:px-4 py-2 bg-gray-100 border border-gray-300 rounded-lg font-semibold text-xs text-gray-700 uppercase tracking-widest hover:bg-gray-200 focus:bg-gray-200 active:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition ease-in-out duration-150">
                     <svg class="w-4 h-4 mr-1 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
@@ -20,6 +33,7 @@
                     <span class="hidden sm:inline">Manage Movements</span>
                     <span class="sm:hidden">History</span>
                 </a>
+                @endif
             </div>
             @endif
         </div>
@@ -118,6 +132,9 @@
                 </div>
             </div>
 
+            <!-- Attachments Section -->
+            @livewire(\App\Livewire\Files\FileAttachments::class, ['file' => $file])
+
             <!-- Movement History -->
             <div class="bg-white rounded-xl shadow-lg">
                 <div class="px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200">
@@ -128,7 +145,7 @@
                     @if($file->movements->count() > 0)
                     <div class="flow-root">
                         <ul class="-mb-8">
-                            @foreach($file->movements as $index => $movement)
+                            @foreach($file->movements->sortBy('sent_at') as $index => $movement)
                             <li>
                                 <div class="relative pb-8">
                                     @if(!$loop->last)

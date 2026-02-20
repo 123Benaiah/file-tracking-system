@@ -279,8 +279,10 @@
                                     <label class="block text-sm font-medium text-gray-700 mb-1">Position</label>
                                     <select wire:model.live="position_id" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-500">
                                         <option value="">Select Position</option>
-                                        @foreach($positions as $id => $title)
-                                            <option value="{{ $id }}" @selected($position_id == $id)>{{ $title }}</option>
+                                        @foreach($positions as $id => $pos)
+                                            <option value="{{ $id }}" @selected($position_id == $id) @disabled($pos['disabled'])>
+                                                {{ $pos['title'] }}{{ $pos['disabled'] ? ' (Taken)' : '' }}
+                                            </option>
                                         @endforeach
                                     </select>
                                 </div>

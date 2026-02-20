@@ -97,7 +97,37 @@ class EmployeeManagement extends Component
 
         $departmentsList = Department::orderBy('name')->pluck('name', 'id');
         $departments = Department::orderBy('name')->pluck('name', 'id');
-        $positions = Position::orderBy('title')->pluck('title', 'id');
+
+        // Get all active employees with positions that are "single-occupancy" (Registry Head, Director, Assistant Director)
+        $takenPositionIds = Employee::where('is_active', true)
+            ->whereNotNull('position_id')
+            ->where('employee_number', '!=', $this->employee_number)
+            ->where(function($query) {
+                $query->where('is_registry_head', true)
+                    ->orWhereHas('position', function($q) {
+                        $q->where(function($sub) {
+                            $sub->whereRaw('LOWER(title) LIKE ?', ['%director%'])
+                                ->orWhereRaw('LOWER(title) LIKE ?', ['%assistant director%'])
+                                ->orWhereRaw('LOWER(title) LIKE ?', ['%registry head%']);
+                        });
+                    });
+            })
+            ->pluck('position_id')
+            ->toArray();
+
+        // When editing, allow the current employee to keep their existing position
+        if ($this->editMode && $this->position_id) {
+            $takenPositionIds = array_diff($takenPositionIds, [$this->position_id]);
+        }
+
+        $positions = Position::orderBy('title')
+            ->pluck('title', 'id')
+            ->map(function ($title, $id) use ($takenPositionIds) {
+                return [
+                    'title' => $title,
+                    'disabled' => in_array($id, $takenPositionIds),
+                ];
+            });
 
         // Filter units by selected department (only show units for departments that have units)
         $units = collect();

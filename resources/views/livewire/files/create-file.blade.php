@@ -202,6 +202,32 @@
                                       class="w-full bg-white border-gray-300 text-gray-900 placeholder-gray-400 rounded-lg shadow-sm focus:border-orange-500 focus:ring-orange-500"></textarea>
                             @error('remarks') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
                         </div>
+
+                        <!-- File Attachments -->
+                        <div class="md:col-span-2">
+                            <label for="attachments" class="block text-sm font-medium text-gray-700 mb-2">
+                                Attachments
+                            </label>
+                            <input type="file" wire:model="attachments" id="attachments" multiple
+                                   class="w-full bg-white border border-gray-300 text-gray-900 text-sm rounded-lg shadow-sm focus:border-orange-500 focus:ring-orange-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-l-lg file:border-0 file:text-xs file:font-semibold file:bg-orange-50 file:text-orange-700 hover:file:bg-orange-100">
+                            @error('attachments.*') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
+                            <p class="text-xs text-gray-500 mt-1">You can select multiple files (max 10MB each)</p>
+                            
+                            @if(count($attachments) > 0)
+                            <div class="mt-3 space-y-2">
+                                @foreach($attachments as $index => $attachment)
+                                <div class="flex items-center justify-between p-2 bg-gray-50 rounded-lg gap-2">
+                                    <span class="text-sm text-gray-700 truncate">{{ $attachment->getClientOriginalName() }}</span>
+                                    <button type="button" wire:click="removeAttachment({{ $index }})" class="text-red-500 hover:text-red-700 flex-shrink-0">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                        </svg>
+                                    </button>
+                                </div>
+                                @endforeach
+                            </div>
+                            @endif
+                        </div>
                     </div>
 
                     <!-- Actions -->

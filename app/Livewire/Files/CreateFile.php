@@ -79,6 +79,14 @@ class CreateFile extends Component
         }
     }
 
+    public function removeAttachment($index)
+    {
+        if (isset($this->attachments[$index])) {
+            unset($this->attachments[$index]);
+            $this->attachments = array_values($this->attachments);
+        }
+    }
+
     public function updatedFileCreationType()
     {
         if ($this->fileCreationType === 'new') {

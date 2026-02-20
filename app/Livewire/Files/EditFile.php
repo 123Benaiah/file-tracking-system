@@ -3,13 +3,16 @@
 namespace App\Livewire\Files;
 
 use Livewire\Component;
+use Livewire\WithFileUploads;
 use App\Models\File;
+use App\Models\FileAttachment;
 use App\Models\Employee;
 use App\Traits\WithToast;
+use Illuminate\Support\Facades\Storage;
 
 class EditFile extends Component
 {
-    use WithToast;
+    use WithToast, WithFileUploads;
     public File $file;
     public $showDeleteModal = false;
 
@@ -23,6 +26,9 @@ class EditFile extends Component
     public $remarks;
     public $due_date;
     public $current_holder;
+    public $attachments = [];
+    public $existingAttachments = [];
+    public $attachmentsToDelete = [];
 
     protected function rules()
     {
@@ -37,6 +43,7 @@ class EditFile extends Component
             'remarks' => 'nullable|string',
             'due_date' => 'nullable|date',
             'current_holder' => 'nullable|exists:employees,employee_number',
+            'attachments.*' => 'nullable|file|max:10240',
         ];
     }
 
@@ -53,6 +60,7 @@ class EditFile extends Component
         $this->remarks = $file->remarks;
         $this->due_date = $file->due_date?->format('Y-m-d');
         $this->current_holder = $file->current_holder;
+        $this->existingAttachments = $file->attachments->toArray();
     }
 
     public function update()
@@ -73,6 +81,28 @@ class EditFile extends Component
                 'current_holder' => $this->current_holder,
             ]);
 
+                    foreach ($this->attachmentsToDelete as $attachmentId) {
+                $attachment = FileAttachment::find($attachmentId);
+                if ($attachment) {
+                    $attachment->delete();
+                }
+            }
+
+            foreach ($this->attachments as $attachment) {
+                $path = $attachment->store('attachments/'.$this->file->id, 'local');
+
+                FileAttachment::create([
+                    'file_id' => $this->file->id,
+                    'filename' => $attachment->hashName(),
+                    'original_name' => $attachment->getClientOriginalName(),
+                    'path' => $path,
+                    'mime_type' => $attachment->getMimeType(),
+                    'size' => $attachment->getSize(),
+                    'uploaded_by' => auth()->user()->employee_number,
+                    'description' => null,
+                ]);
+            }
+
             $this->toastSuccess('File Updated', 'File ' . $this->new_file_no . ' has been updated successfully.');
 
             return redirect()->route('files.show', $this->file);
@@ -80,6 +110,33 @@ class EditFile extends Component
             report($e);
             $this->toastError('Update Failed', 'Something went wrong while updating the file. Please try again.');
         }
+    }
+
+    public function removeExistingAttachment($attachmentId)
+    {
+        if (!in_array($attachmentId, $this->attachmentsToDelete)) {
+            $this->attachmentsToDelete[] = $attachmentId;
+        }
+    }
+
+    public function restoreAttachment($attachmentId)
+    {
+        $this->attachmentsToDelete = array_filter($this->attachmentsToDelete, function($id) use ($attachmentId) {
+            return $id !== $attachmentId;
+        });
+    }
+
+    public function removeNewAttachment($index)
+    {
+        if (isset($this->attachments[$index])) {
+            unset($this->attachments[$index]);
+            $this->attachments = array_values($this->attachments);
+        }
+    }
+
+    public function isAttachmentMarkedForDeletion($attachmentId)
+    {
+        return in_array($attachmentId, $this->attachmentsToDelete);
     }
 
     public function deleteFile()
