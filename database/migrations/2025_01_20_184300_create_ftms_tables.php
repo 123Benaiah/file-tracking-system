@@ -15,6 +15,7 @@ return new class extends Migration
         Schema::create('departments', function (Blueprint $table) {
             $table->id();
             $table->string('name');
+            $table->string('code', 20)->unique()->nullable();
             $table->string('location')->nullable();
             $table->boolean('is_registry')->default(false);
             $table->boolean('has_units')->default(true);
@@ -22,6 +23,7 @@ return new class extends Migration
             
             $table->index('is_registry');
             $table->index('name');
+            $table->index('code');
         });
 
         // Units
@@ -29,26 +31,28 @@ return new class extends Migration
             $table->id();
             $table->foreignId('department_id')->constrained()->onDelete('cascade');
             $table->string('name');
+            $table->string('code', 20)->unique()->nullable();
             $table->boolean('is_registry')->default(false);
             $table->timestamps();
             
             $table->index('department_id');
             $table->index('is_registry');
+            $table->index('code');
         });
 
         // Positions
         Schema::create('positions', function (Blueprint $table) {
             $table->id();
             $table->string('title');
-            $table->string('position_code')->unique()->nullable();
+            $table->string('code', 50)->unique()->nullable();
             $table->enum('position_type', ['director', 'assistant_director', 'supervisor', 'staff', 'support'])->default('staff');
-            $table->integer('position_level')->default(3);
+            $table->integer('level')->default(3);
             $table->enum('employment_type', ['permanent', 'contract', 'temporary', 'intern'])->default('permanent');
             $table->text('description')->nullable();
             $table->timestamps();
             
             $table->index('position_type');
-            $table->index('position_level');
+            $table->index('level');
         });
 
         // Employees

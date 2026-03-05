@@ -43,7 +43,6 @@
 &nbsp;&nbsp;&nbsp;&nbsp;4.4 Database Structure and Models  
 &nbsp;&nbsp;&nbsp;&nbsp;4.5 User Interface Design  
 &nbsp;&nbsp;&nbsp;&nbsp;4.6 Entity Relationship Model  
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;4.6.1 User Interface Design  
 &nbsp;&nbsp;&nbsp;&nbsp;4.7 Hardware Requirements  
 
 5.0 Implementation  
@@ -392,9 +391,12 @@ Requirements were documented using:
 - The system shall support "Remember Me" functionality
 
 **FR-002: Role-Based Access Control**
-- The system shall support four user roles: Admin, Registry Head, Registry Staff, and Department User
+- The system shall support role-based access using a combination of:
+  - role field: 'admin' or 'user'
+  - is_registry_head boolean: Designates Registry Head
+  - is_registry_staff boolean: Designates Registry Staff
 - The system shall restrict access to functions based on user roles
-- The system shall allow admins to assign and modify user roles
+- The system shall allow admins to assign and modify user roles and flags
 
 **FR-003: File Registration**
 - The system shall auto-generate unique file numbers in format FTS-YYYYMMDD-XXXX
@@ -750,28 +752,43 @@ The system follows a standard web application architecture with client-server mo
 
 #### 4.2.1 Authentication and Role-Based Access Flow
 
+**Role Implementation:**
+
+The system uses a hybrid approach combining:
+- **role** field: 'admin' or 'user' 
+- **is_registry_head** boolean: Designates Registry Head status
+- **is_registry_staff** boolean: Designates Registry Staff status
+
+This allows flexible permission management without complex role tables.
+
 **Authentication Flow:**
 
 1. **Login Request**: User submits employee_number and password
 2. **Credential Validation**: Laravel's Auth facade validates against database
 3. **Session Creation**: Upon successful authentication, session created with user data
 4. **Middleware Check**: Each request passes through auth middleware verifying valid session
-5. **Role Verification**: Additional middleware checks specific role requirements
+5. **Role Verification**: Additional middleware checks role field and boolean flags
 6. **Access Decision**: Request proceeds if all checks pass, otherwise redirects or aborts
 
 **Middleware Implementation:**
 
-The system implements five custom middleware classes for access control:
+The system implements custom middleware classes for access control:
 
-1. **Admin Middleware**: Restricts access to admin-only routes
-2. **CheckRegistryHead**: Allows registry head and admin users
-3. **CheckRegistryStaff**: Allows registry department members
+1. **Admin Middleware**: Checks if role = 'admin'
+2. **CheckRegistryHead**: Allows users where is_registry_head = true or isRegistryHead() returns true
+3. **CheckRegistryStaff**: Allows users where is_registry_staff = true or is in registry department
 4. **CheckDepartmentAccess**: Allows department users
 5. **NonAdmin Middleware**: Prevents admin access to certain routes
 
-Each middleware checks the authenticated user's role attributes and either allows the request to proceed or returns an appropriate HTTP error response.
+Each middleware checks the authenticated user's role field and boolean flags, then either allows the request to proceed or returns an appropriate HTTP error response.
 
 #### 4.2.2 User Role Functionality Mapping
+
+The system implements roles using:
+- **Admin**: role = 'admin'
+- **Registry Head**: is_registry_head = true (regardless of role)
+- **Registry Staff**: is_registry_staff = true (role = 'user')
+- **Department User**: role = 'user', no special flags
 
 | Feature | Admin | Registry Head | Registry Staff | Dept User |
 |---------|-------|---------------|----------------|-----------|
@@ -917,8 +934,24 @@ The database consists of 11 main entities with the following relationships:
 
 **employees Table:**
 - Primary key: employee_number (string, unique)
-- Fields: name, email, password, is_admin, is_registry_head
+- Fields: name, email, password, role, is_admin, is_registry_head, is_registry_staff, office
 - Foreign keys: department_id, unit_id, position_id
+- Soft deletes supported
+
+**departments Table:**
+- Primary key: id
+- Fields: name, code, location, is_registry, has_units, is_registry_department
+- Soft deletes supported
+
+**units Table:**
+- Primary key: id
+- Foreign key: department_id
+- Fields: name, code, is_registry, is_registry_unit
+- Soft deletes supported
+
+**positions Table:**
+- Primary key: id
+- Fields: title, code, position_type, level, employment_type
 - Soft deletes supported
 
 **files Table:**
@@ -1026,18 +1059,23 @@ The UI follows a "Clean, Efficient, Intuitive" philosophy:
 
 **Employee Entity**
 - Represents system users who are Ministry employees
-- Attributes: employee_number (PK), name, email, password, is_admin, is_registry_head, department_id (FK), unit_id (FK), position_id (FK)
+- Attributes: employee_number (PK), name, email, password, role, is_admin, is_registry_head, is_registry_staff, department_id (FK), unit_id (FK), position_id (FK)
 - Relationships: Belongs to department, unit, position; Has many files, movements
 
 **Department Entity**
 - Represents organizational departments
-- Attributes: id (PK), name, location, is_registry, has_units
+- Attributes: id (PK), name, code, location, is_registry, has_units, is_registry_department
 - Relationships: Has many units, employees, department_heads
 
 **Unit Entity**
 - Represents sub-departments
-- Attributes: id (PK), department_id (FK), name, is_registry
+- Attributes: id (PK), department_id (FK), name, code, is_registry, is_registry_unit
 - Relationships: Belongs to department; Has many employees, unit_heads
+
+**Position Entity**
+- Represents job titles
+- Attributes: id (PK), title, code, position_type, level, employment_type
+- Relationships: Has many employees
 
 **File Entity**
 - Represents physical file records

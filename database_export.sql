@@ -34,6 +34,7 @@ DROP TABLE IF EXISTS `failed_jobs`;
 CREATE TABLE `departments` (
     `id` BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     `name` VARCHAR(255) NOT NULL,
+    `code` VARCHAR(20) UNIQUE NULL,
     `location` VARCHAR(255) NULL,
     `is_registry` BOOLEAN DEFAULT FALSE,
     `has_units` BOOLEAN DEFAULT TRUE,
@@ -41,7 +42,8 @@ CREATE TABLE `departments` (
     `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     
     INDEX `idx_is_registry` (`is_registry`),
-    INDEX `idx_name` (`name`)
+    INDEX `idx_name` (`name`),
+    INDEX `idx_code` (`code`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Units Table
@@ -49,29 +51,31 @@ CREATE TABLE `units` (
     `id` BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     `department_id` BIGINT UNSIGNED NOT NULL,
     `name` VARCHAR(255) NOT NULL,
+    `code` VARCHAR(20) UNIQUE NULL,
     `is_registry` BOOLEAN DEFAULT FALSE,
     `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     
     FOREIGN KEY (`department_id`) REFERENCES `departments`(`id`) ON DELETE CASCADE,
     INDEX `idx_department_id` (`department_id`),
-    INDEX `idx_is_registry` (`is_registry`)
+    INDEX `idx_is_registry` (`is_registry`),
+    INDEX `idx_code` (`code`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Positions Table
 CREATE TABLE `positions` (
     `id` BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     `title` VARCHAR(255) NOT NULL,
-    `position_code` VARCHAR(50) UNIQUE NULL,
+    `code` VARCHAR(50) UNIQUE NULL,
     `position_type` ENUM('director', 'assistant_director', 'supervisor', 'staff', 'support') DEFAULT 'staff',
-    `position_level` INT DEFAULT 3,
+    `level` INT DEFAULT 3,
     `employment_type` ENUM('permanent', 'contract', 'temporary', 'intern') DEFAULT 'permanent',
     `description` TEXT NULL,
     `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     
     INDEX `idx_position_type` (`position_type`),
-    INDEX `idx_position_level` (`position_level`)
+    INDEX `idx_level` (`level`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Employees Table
@@ -313,28 +317,28 @@ CREATE TABLE `failed_jobs` (
 -- ============================================
 
 -- Insert sample departments
-INSERT INTO `departments` (`name`, `location`, `is_registry`, `has_units`) VALUES
-('Registry Department', 'Main Building', TRUE, FALSE),
-('Human Resources', 'Annex A', FALSE, TRUE),
-('Finance Department', 'Annex B', FALSE, TRUE),
-('Administration', 'Main Building', FALSE, TRUE);
+INSERT INTO `departments` (`name`, `code`, `location`, `is_registry`, `has_units`) VALUES
+('Registry Department', 'REG', 'Main Building', TRUE, FALSE),
+('Human Resources and Administration', 'HRA', 'Annex A', FALSE, TRUE),
+('Finance', 'FIN', 'Annex B', FALSE, TRUE),
+('Administration', 'ADM', 'Main Building', FALSE, TRUE);
 
 -- Insert sample units
-INSERT INTO `units` (`department_id`, `name`, `is_registry`) VALUES
-(2, 'Recruitment Unit', FALSE),
-(2, 'Training Unit', FALSE),
-(3, 'Accounts Unit', FALSE),
-(3, 'Budget Unit', FALSE),
-(4, 'General Services', FALSE);
+INSERT INTO `units` (`department_id`, `name`, `code`, `is_registry`) VALUES
+(2, 'Recruitment Unit', 'HRA-REC', FALSE),
+(2, 'Training Unit', 'HRA-TRN', FALSE),
+(3, 'Accounts Unit', 'FIN-ACC', FALSE),
+(3, 'Budget Unit', 'FIN-BUD', FALSE),
+(4, 'General Services', 'ADM-GSV', FALSE);
 
 -- Insert sample positions
-INSERT INTO `positions` (`title`, `position_code`, `position_type`, `position_level`, `employment_type`) VALUES
-('Director', 'DIR001', 'director', 1, 'permanent'),
-('Assistant Director', 'ADIR001', 'assistant_director', 2, 'permanent'),
-('Supervisor', 'SUP001', 'supervisor', 3, 'permanent'),
+INSERT INTO `positions` (`title`, `code`, `position_type`, `level`, `employment_type`) VALUES
+('Director', 'DIR001', 'director', 10, 'permanent'),
+('Assistant Director', 'ADIR001', 'assistant_director', 8, 'permanent'),
+('Supervisor', 'SUP001', 'supervisor', 6, 'permanent'),
 ('Staff Officer', 'STF001', 'staff', 4, 'permanent'),
-('Support Staff', 'SUPT001', 'support', 5, 'permanent'),
-('Registry Head', 'REG001', 'director', 1, 'permanent'),
+('Support Staff', 'SUPT001', 'support', 1, 'permanent'),
+('Registry Head', 'REG001', 'director', 10, 'permanent'),
 ('Registry Clerk', 'REG002', 'staff', 4, 'permanent');
 
 -- Insert sample employees (password: bcrypt hash of 'Moha@2024')

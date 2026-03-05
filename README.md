@@ -79,11 +79,11 @@ The **File Tracking Management System (FTMS)** is a comprehensive web-based solu
 - Bulk confirmation capabilities
 
 #### 4. Role-Based Access Control
-Four distinct user roles:
-- **Admin**: Full system access including employee management
-- **Registry Head**: File management, user creation, file merging
-- **Registry Staff**: File operations, transfers, tracking
-- **Department User**: Department-level file operations
+Four distinct user roles (implemented via role field + boolean flags):
+- **Admin**: Full system access including employee management (role='admin')
+- **Registry Head**: File management, user creation, file merging (is_registry_head=true)
+- **Registry Staff**: File operations, transfers, tracking (is_registry_staff=true)
+- **Department User**: Department-level file operations (regular users)
 
 #### 5. Dashboard & Reporting
 - Registry Dashboard: Statistics, pending receipts, recent activity
@@ -277,6 +277,13 @@ post_max_size = 20M
 ---
 
 ## User Roles & Permissions
+
+### Role Implementation
+
+The system uses a combination of:
+- **role** field: 'admin' or 'user'
+- **is_registry_head** boolean: Designates Registry Head
+- **is_registry_staff** boolean: Designates Registry Staff
 
 ### Role Overview
 
@@ -530,10 +537,27 @@ server {
 
 ### Key Tables
 
+**departments**
+- Primary key: id
+- Fields: name, code, location, is_registry, has_units, is_registry_department
+- Soft deletes
+
+**units**
+- Primary key: id
+- Foreign keys: department_id
+- Fields: name, code, is_registry, is_registry_unit
+- Soft deletes
+
+**positions**
+- Primary key: id
+- Fields: title, code, position_type, level, employment_type
+- Soft deletes
+
 **employees**
 - Primary key: employee_number (string)
-- Fields: name, email, password, is_admin, is_registry_head
+- Fields: name, email, password, role, is_admin, is_registry_head, is_registry_staff
 - Foreign keys: department_id, unit_id, position_id
+- Soft deletes
 
 **files**
 - Primary key: id
